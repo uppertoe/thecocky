@@ -1,0 +1,61 @@
+.paginav {
+    position: fixed; /* Stick to the viewport */
+    bottom: 0;
+    left: 0;
+    width: 100%; /* Full-width */
+    padding: 10px 0; /* Default padding */
+    box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1); /* Shadow for separation */
+    z-index: 100; /* Stay above other content */
+    display: flex; /* Align navigation buttons */
+    justify-content: space-between; /* Space buttons apart */
+}
+
+/* Center navigation buttons */
+.paginav a {
+    display: flex; /* Enable flexbox for centering */
+    flex-direction: column; /* Center text vertically */
+    justify-content: center; /* Align text vertically */
+    align-items: center; /* Align text horizontally */
+    text-decoration: none; /* Remove underline from links */
+    color: var(--link-color, black); /* Customize link color */
+    padding: 20px; /* Padding for better clickability */
+    border-radius: var(--radius);
+    font-size: 1.2em; /* Default text size */
+    font-weight: bold; /* Make text stand out */
+}
+
+/* Ensure navigation buttons align properly */
+.paginav .prev,
+.paginav .next {
+    width: 50%; /* Equal width for navigation buttons */
+    text-align: center; /* Center-align the text */
+}
+
+/* Optional hover effect */
+.paginav span:hover:not(.title) {
+    box-shadow: 0 1px 0;
+}
+
+/* Keep the "next" button aligned on the right */
+.paginav .next {
+    margin-inline-start: auto;
+    text-align: center;
+}
+
+/* Specific adjustments for smaller screens */
+@media (max-width: 768px) {
+    .paginav {
+        padding: 5px 0; /* Reduce vertical padding */
+        box-shadow: none; /* Simplify the shadow for small screens */
+    }
+
+    .paginav a {
+        padding: 10px; /* Reduce button padding */
+        font-size: 1em; /* Slightly smaller text size */
+    }
+}
+
+
+.post-footer > .paginav {
+    margin-bottom: 0; /* Remove the bottom margin specifically for .paginav */
+}
