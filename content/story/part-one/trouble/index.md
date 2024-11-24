@@ -1,10 +1,10 @@
 ---
-title: "1 - Trouble"
+title: "1 · Trouble"
 cover:
-    image: "images/bedroom.png" # image path/url
+    image: "bedroom.png" # image path/url
     alt: "<alt text>" # alt text
     caption: "<text>" # display caption under cover
-    relative: "false"
+    relative: "true"
 weight: 100
 ---
 ### There’s trouble at home, your parents are squabbling,

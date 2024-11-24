@@ -1,10 +1,10 @@
 ---
-title: "3 - Station"
+title: "3 · Station"
 cover:
-    image: "images/station.png" # image path/url
+    image: "station.png" # image path/url
     alt: "<alt text>" # alt text
     caption: "<text>" # display caption under cover
-    relative: "false"
+    relative: "true"
 weight: 300
 ---
 ### When the dogs stop snarling and the rails peter out,

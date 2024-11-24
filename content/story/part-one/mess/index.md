@@ -1,5 +1,5 @@
 ---
-title: "6 - Mess"
+title: "6 · Mess"
 cover:
     image: "" # image path/url
     alt: "<alt text>" # alt text

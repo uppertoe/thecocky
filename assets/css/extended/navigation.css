@@ -46,11 +46,11 @@
 @media (max-width: 768px) {
     .paginav {
         padding: 5px 0; /* Reduce vertical padding */
-        box-shadow: none; /* Simplify the shadow for small screens */
+        box-shadow: 0 -2px 5px rgba(0, 0, 0, 0.1); /* Subtle shadow on the top */
     }
 
     .paginav a {
-        padding: 10px; /* Reduce button padding */
+        padding: 0px; /* Reduce button padding */
         font-size: 1em; /* Slightly smaller text size */
     }
 }

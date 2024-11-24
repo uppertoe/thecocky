@@ -1,10 +1,10 @@
 ---
-title: "2 - Drift"
+title: "2 · Drift"
 cover:
-    image: "images/dog.png" # image path/url
+    image: "dog.png" # image path/url
     alt: "<alt text>" # alt text
     caption: "<text>" # display caption under cover
-    relative: "false"
+    relative: "true"
 weight: 200
 ---
 ### … to get there you simply float out your door;
