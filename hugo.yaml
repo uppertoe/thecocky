@@ -65,14 +65,6 @@ params:
     - name: email
       url: "mailto:fdasf@asdfgdasf.com"
 
-  analytics:
-    google:
-      SiteVerificationTag: "G-WCXK3LFYBF"
-  #  bing:
-  #    SiteVerificationTag: "XYZabc"
-  #  yandex:
-  #    SiteVerificationTag: "XYZabc"
-
   cover:
     hidden: false # hide everywhere but not in structured data
     hiddenInList: true # hide on list pages and home
