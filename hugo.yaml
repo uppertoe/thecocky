@@ -65,9 +65,9 @@ params:
     - name: email
       url: "mailto:fdasf@asdfgdasf.com"
 
-  #analytics:
-  #  google:
-  #    SiteVerificationTag: "XYZabc"
+  analytics:
+    google:
+      SiteVerificationTag: "G-WCXK3LFYBF"
   #  bing:
   #    SiteVerificationTag: "XYZabc"
   #  yandex:
