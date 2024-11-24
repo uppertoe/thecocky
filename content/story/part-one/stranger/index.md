@@ -1,10 +1,10 @@
 ---
 title: "4 · Stranger"
 cover:
-    image: "stranger.png" # image path/url
+    image: "images/stranger.png" # image path/url
     alt: "<alt text>" # alt text
     caption: "<text>" # display caption under cover
-    relative: "true"
+    relative: "false"
 weight: 400
 ---
 ### Deep in the gloom is a wise-looking creature -

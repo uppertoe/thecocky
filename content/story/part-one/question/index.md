@@ -1,10 +1,10 @@
 ---
 title: "5 · Question"
 cover:
-    image: "question.png" # image path/url
+    image: "images/question.png" # image path/url
     alt: "<alt text>" # alt text
     caption: "<text>" # display caption under cover
-    relative: "true"
+    relative: "false"
 weight: 500
 ---
 ### But up close he’s not scary - more broken and sad.
