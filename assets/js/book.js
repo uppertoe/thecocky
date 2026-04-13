@@ -197,21 +197,23 @@
     }
   });
 
-  // ── Preload neighbour images for snappier turns ─────────
-  function preloadNeighbours() {
-    const window_ = 2;
-    for (let d = -window_; d <= window_; d++) {
-      const idx = current + d;
-      if (idx < 0 || idx >= pages.length) continue;
-      const sp = spreadEls[pages[idx].spread];
-      sp.querySelectorAll('img[loading="lazy"]').forEach(img => {
-        img.loading = 'eager';
-      });
-    }
+  // ── Pre-decode all images so turns never race the decoder ──
+  // Images are already loading="eager" so the bytes are on the way;
+  // img.decode() forces the browser to finish decoding into paint-
+  // ready form, avoiding the "image pops in mid-animation" effect.
+  function preloadAll() {
+    const imgs = viewport.querySelectorAll('img');
+    imgs.forEach(img => {
+      const go = () => { if (img.decode) img.decode().catch(() => {}); };
+      if (img.complete && img.naturalWidth > 0) go();
+      else img.addEventListener('load', go, { once: true });
+    });
   }
 
+  function preloadNeighbours() { /* kept for call-site compatibility */ }
+
   render();
-  preloadNeighbours();
+  preloadAll();
 
   // ── Share ───────────────────────────────────────────────
   const shareUrlBase = window.location.href.split('#')[0].split('?')[0];
