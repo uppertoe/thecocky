@@ -1,0 +1,87 @@
+{{ define "main" }}
+{{- $leaves := site.Data.book.leaves -}}
+
+{{/* ── Build spreads at build time ──────────────────────────
+     Walk the leaves once, pairing adjacent compatible ones into
+     spreads. Solo kinds (cover/title/end) never pair; image+image
+     with a matching `pair` field becomes a stitched scene. */}}
+{{- $spreads := slice -}}
+{{- $skip := false -}}
+{{- range $i, $leaf := $leaves -}}
+  {{- if $skip -}}
+    {{- $skip = false -}}
+  {{- else -}}
+    {{- $kind := $leaf.kind -}}
+    {{- $isSolo := or (eq $kind "cover") (or (eq $kind "title") (eq $kind "end")) -}}
+    {{- $next := false -}}
+    {{- $nextKind := "" -}}
+    {{- if lt (add $i 1) (len $leaves) -}}
+      {{- $next = index $leaves (add $i 1) -}}
+      {{- $nextKind = $next.kind -}}
+    {{- end -}}
+    {{- $canPair := and (and (not $isSolo) (ne $next false)) (or (eq $nextKind "verse") (eq $nextKind "image")) -}}
+    {{- if $canPair -}}
+      {{- $type := "image-verse" -}}
+      {{- if and (eq $kind "image") (eq $nextKind "image") -}}
+        {{- $pairA := "" -}}{{- with $leaf.pair }}{{ $pairA = . }}{{ end -}}
+        {{- $pairB := "" -}}{{- with $next.pair }}{{ $pairB = . }}{{ end -}}
+        {{- if and (ne $pairA "") (eq $pairA $pairB) -}}
+          {{- $type = "stitched-image" -}}
+        {{- else -}}
+          {{- $type = "double-image" -}}
+        {{- end -}}
+      {{- else if and (eq $kind "verse") (eq $nextKind "verse") -}}
+        {{- $type = "double-verse" -}}
+      {{- end -}}
+      {{- $spreads = $spreads | append (dict "type" $type "leaves" (slice $leaf $next) "startIndex" $i) -}}
+      {{- $skip = true -}}
+    {{- else -}}
+      {{- $spreads = $spreads | append (dict "type" (printf "solo-%s" $kind) "leaves" (slice $leaf) "startIndex" $i) -}}
+    {{- end -}}
+  {{- end -}}
+{{- end -}}
+
+{{/* Reading-time estimate from verse word count, ~180wpm. */}}
+{{- $words := 0 -}}
+{{- range $leaves -}}
+  {{- if eq .kind "verse" -}}
+    {{- $words = add $words (len (split .text " ")) -}}
+  {{- end -}}
+{{- end -}}
+{{- $minutes := math.Round (div (mul $words 1.0) 180.0) -}}
+{{- if lt $minutes 1 -}}{{- $minutes = 1 -}}{{- end -}}
+
+<main class="book" id="book" aria-label="The Great Cocky — picture book">
+  <div class="book__viewport" id="book-viewport">
+    {{- range $sIdx, $spread := $spreads -}}
+    <section class="spread spread--{{ $spread.type }}{{ if eq (len $spread.leaves) 1 }} spread--solo{{ end }}" data-spread="{{ $sIdx }}" aria-hidden="true">
+      {{- range $li, $leaf := $spread.leaves -}}
+        {{- partial (printf "leaf-%s.html" $leaf.kind) (dict "leaf" $leaf "index" (add $spread.startIndex $li) "minutes" $minutes "spreadCount" (len $spreads)) -}}
+      {{- end -}}
+    </section>
+    {{- end -}}
+  </div>
+
+  <nav class="book__nav" aria-label="Page navigation">
+    <button class="book__chev" id="btn-prev" aria-label="Previous page">‹</button>
+    <div class="book__progress" aria-live="polite">
+      <div class="book__progress-bar"><span class="book__progress-fill" id="progress-fill"></span></div>
+      <div class="book__progress-text">
+        <span id="page-current">1</span>
+        <span class="book__progress-sep">of</span>
+        <span id="page-total">{{ len $spreads }}</span>
+      </div>
+    </div>
+    <button class="book__chev" id="btn-next" aria-label="Next page">›</button>
+    <button class="book__nav-share" id="nav-share" aria-label="Share this book" title="Share">
+      <svg viewBox="0 0 24 24" aria-hidden="true">
+        <path d="M12 3v13M7 8l5-5 5 5M5 14v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+      </svg>
+      <span class="book__nav-share-toast" id="nav-share-toast" aria-hidden="true">Link copied</span>
+    </button>
+  </nav>
+
+  <button class="book__edge book__edge--left" id="edge-prev" aria-hidden="true" tabindex="-1"></button>
+  <button class="book__edge book__edge--right" id="edge-next" aria-hidden="true" tabindex="-1"></button>
+</main>
+{{ end }}

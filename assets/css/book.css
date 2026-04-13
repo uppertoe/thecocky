@@ -1,0 +1,1073 @@
+/* ─────────────────────────────────────────────────────────
+   The Great Cocky — picture book stylesheet
+   ───────────────────────────────────────────────────────── */
+
+:root {
+  /* Palette — picked from the PDF artwork */
+  --paper:        #f6efe1;       /* warm cream */
+  --paper-edge:   #e8dcc1;       /* slight tea-stain at the edges */
+  --paper-shadow: rgba(60, 40, 20, 0.18);
+  --ink:          #1a1414;       /* near-black with red undertone */
+  --ink-soft:     #4a3a30;
+  --accent:       #b8242c;       /* the red of the tie / drop-caps */
+  --accent-soft:  #d65a5a;
+  --gilt:         #b88930;
+  --vignette:     #0d0808;       /* deep background behind the book */
+
+  --serif:        'Fraunces', 'Hoefler Text', Garamond, 'Times New Roman', serif;
+  --display:      'Fraunces', Garamond, serif;
+
+  --spread-w:     min(96vw, 1200px);
+  --spread-h:     min(88vh, 820px);
+  --turn:         420ms cubic-bezier(0.22, 0.61, 0.36, 1);
+}
+
+* { box-sizing: border-box; }
+
+html, body {
+  margin: 0;
+  padding: 0;
+  background: var(--vignette);
+  background-image:
+    radial-gradient(ellipse at center, #1c1410 0%, #060403 90%);
+  color: var(--ink);
+  font-family: var(--serif);
+  font-size: 18px;
+  line-height: 1.55;
+  font-variation-settings: "opsz" 14, "SOFT" 50;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* JS-engaged: lock the viewport and run the page-turn UI. */
+html.js, html.js body {
+  height: 100%;
+  overflow: hidden;
+}
+html.js body { overscroll-behavior: none; }
+
+/* ── Book frame ─────────────────────────────────────────── */
+.book {
+  /* No-JS default: a normal scrollable page that stacks every spread. */
+  max-width: var(--spread-w);
+  margin: 0 auto;
+  padding: 2rem 1rem;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+
+html.js .book {
+  position: fixed;
+  inset: 0;
+  display: grid;
+  place-items: center;
+  padding: 0;
+  max-width: none;
+}
+
+.book__viewport {
+  position: relative;
+  width: 100%;
+}
+
+html.js .book__viewport {
+  width: var(--spread-w);
+  height: var(--spread-h);
+  perspective: 2200px;
+}
+
+/* ── Spreads (rendered server-side by Hugo) ─────────────── */
+.spread {
+  /* No-JS default: spreads stack in the page flow, each at its
+     natural aspect ratio. */
+  position: relative;
+  width: 100%;
+  aspect-ratio: 1200 / 820;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  background: var(--paper);
+  border-radius: 2px;
+  box-shadow:
+    0 1px 2px rgba(0,0,0,0.25),
+    0 24px 60px -28px rgba(0,0,0,0.55),
+    0 0 0 1px rgba(0,0,0,0.18);
+  margin: 0 0 2.4rem;
+  overflow: hidden;
+}
+
+html.js .spread {
+  position: absolute;
+  inset: 0;
+  margin: 0;
+  aspect-ratio: auto;
+  opacity: 0;
+  visibility: hidden;
+  transform: translateX(0);
+  transition: visibility 0s linear var(--turn);
+}
+
+/* Avoid the brief flash where every spread is hidden but none is yet
+   marked active: the first one stays visible until JS picks one. */
+html.js .book:not(.is-ready) .spread:first-child {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* subtle gutter — a hairline rather than a heavy shadow */
+.spread::after {
+  content: "";
+  position: absolute;
+  top: 8%;
+  bottom: 8%;
+  left: 50%;
+  width: 1px;
+  transform: translateX(-50%);
+  pointer-events: none;
+  background: linear-gradient(180deg,
+    transparent,
+    rgba(60, 40, 20, 0.18) 18%,
+    rgba(60, 40, 20, 0.18) 82%,
+    transparent);
+}
+
+/* Direction-aware page turn. JS sets data-dir on .book before
+   toggling .is-active / .is-leaving — CSS keys off that. */
+html.js .spread.is-active {
+  opacity: 1;
+  visibility: visible;
+  transform: translateX(0);
+  z-index: 2;
+  animation: spread-enter-fwd var(--turn) cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+html.js .book[data-dir="back"] .spread.is-active {
+  animation-name: spread-enter-back;
+}
+
+html.js .spread.is-leaving {
+  visibility: visible;
+  z-index: 1;
+  animation: spread-leave-fwd var(--turn) cubic-bezier(0.22, 0.61, 0.36, 1) both;
+}
+html.js .book[data-dir="back"] .spread.is-leaving {
+  animation-name: spread-leave-back;
+}
+
+/* First render has no data-dir yet — skip the entrance animation
+   so the initial spread is simply present, not sliding in. */
+html.js .book:not([data-dir]) .spread.is-active {
+  animation: none;
+}
+
+@keyframes spread-enter-fwd {
+  from { opacity: 0; transform: translateX(3.2%); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes spread-enter-back {
+  from { opacity: 0; transform: translateX(-3.2%); }
+  to   { opacity: 1; transform: translateX(0); }
+}
+@keyframes spread-leave-fwd {
+  from { opacity: 1; transform: translateX(0); }
+  to   { opacity: 0; transform: translateX(-3.2%); }
+}
+@keyframes spread-leave-back {
+  from { opacity: 1; transform: translateX(0); }
+  to   { opacity: 0; transform: translateX(3.2%); }
+}
+
+/* Single-leaf spread variants */
+.spread--solo  { grid-template-columns: 1fr; }
+.spread--solo .spread__page { grid-column: 1; }
+.spread--solo::after { display: none; }
+
+/* ── Leaves (the half-pages) ────────────────────────────── */
+.leaf {
+  position: relative;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4.5rem 4rem;
+  min-width: 0;
+  min-height: 0;
+}
+
+.leaf:first-child  { padding-right: 3rem; }
+.leaf:last-child   { padding-left:  3rem; }
+.spread--solo .leaf { padding: 4.5rem; }
+
+/* No-JS / pre-JS: hide nav + edge zones (nothing to navigate to). */
+html:not(.js) .book__nav,
+html:not(.js) .book__edge { display: none; }
+
+/* ── Verse leaf ─────────────────────────────────────────── */
+.leaf--verse .leaf__inner {
+  width: 100%;
+  max-width: 38ch;
+}
+
+.leaf__verse {
+  font-family: var(--serif);
+  font-size: clamp(0.92rem, 0.85vw + 0.55rem, 1.15rem);
+  line-height: 1.65;
+  color: var(--ink);
+  text-align: center;
+}
+
+.spread--double-verse .leaf__verse {
+  font-size: clamp(0.85rem, 0.7vw + 0.5rem, 1.02rem);
+  line-height: 1.6;
+}
+.spread--double-verse .leaf--verse {
+  padding: 3.5rem 2.5rem;
+}
+
+.stanza {
+  margin: 0 0 1.4em;
+}
+.stanza:last-child { margin-bottom: 0; }
+
+.dropcap {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 2.1em;
+  line-height: 0.85;
+  color: var(--accent);
+  display: inline-block;
+  vertical-align: -0.18em;
+  margin-right: 0.02em;
+  font-variation-settings: "opsz" 144, "SOFT" 100;
+}
+
+/* Leading punctuation (opening quotes, etc.) before a dropcap.
+   Styled identically to the dropcap so the cluster reads as one glyph. */
+.leadin {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 2.1em;
+  line-height: 0.85;
+  color: var(--accent);
+  display: inline-block;
+  vertical-align: -0.18em;
+  font-variation-settings: "opsz" 144, "SOFT" 100;
+}
+
+.leaf__verse em {
+  font-style: italic;
+  color: var(--ink);
+}
+
+/* ── Image leaf ─────────────────────────────────────────── */
+.leaf--image {
+  padding: 2rem;
+}
+
+.leaf__figure {
+  margin: 0;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.leaf__figure img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  filter:
+    drop-shadow(0 12px 18px rgba(0,0,0,0.18))
+    drop-shadow(0 2px 4px rgba(0,0,0,0.15));
+}
+
+/* When the spread holds two images side by side */
+.spread--double-image .leaf--image { padding: 2rem 1rem; }
+
+/* Stitched image pair — two halves of one continuous scene.
+   Images bleed edge-to-edge across the gutter as a single picture. */
+.spread--stitched-image { background: #000; }
+.spread--stitched-image::after { display: none; }
+.spread--stitched-image .leaf--image {
+  padding: 0;
+}
+.spread--stitched-image .leaf__figure {
+  width: 100%;
+  height: 100%;
+}
+.spread--stitched-image .leaf__figure img {
+  max-width: none;
+  max-height: none;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  filter: none;
+}
+.spread--stitched-image .leaf--image:first-child .leaf__figure img {
+  object-position: 100% center;
+}
+.spread--stitched-image .leaf--image:last-child .leaf__figure img {
+  object-position: 0 center;
+}
+
+/* ── Cover leaf ─────────────────────────────────────────── */
+.spread--solo-cover {
+  background: var(--paper);
+}
+
+.leaf--cover {
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 4fr);
+  align-items: center;
+  gap: 2rem;
+  padding: 4rem 5rem;
+  width: 100%;
+  height: 100%;
+}
+
+.leaf__cover-art {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  min-height: 0;
+}
+
+.leaf__cover-art img {
+  max-width: 100%;
+  max-height: 100%;
+  width: auto;
+  height: auto;
+  object-fit: contain;
+  /* The cover sketch has a white background; multiply blends it into
+     the cream paper so the cockatoo appears cut out. */
+  mix-blend-mode: multiply;
+}
+
+.leaf__cover-text {
+  text-align: left;
+  padding: 0 1rem;
+}
+
+.leaf__title {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: clamp(2.5rem, 5vw + 1rem, 5.4rem);
+  line-height: 0.92;
+  margin: 0;
+  color: var(--ink);
+  font-variation-settings: "opsz" 144, "SOFT" 80;
+  letter-spacing: -0.01em;
+}
+
+.leaf__title-the {
+  display: block;
+  font-size: 1em;
+  font-style: normal;
+  font-weight: 600;
+  color: var(--ink);
+  margin-bottom: 0.05em;
+}
+
+.leaf__title-main {
+  display: block;
+  font-size: 1em;
+}
+
+.leaf__title-the::first-letter {
+  color: var(--accent);
+}
+
+.leaf__author {
+  margin: 2rem 0 0;
+  font-family: var(--serif);
+  font-style: italic;
+  font-size: 1.02rem;
+  color: var(--ink-soft);
+  letter-spacing: 0.04em;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+
+.leaf__author::before {
+  content: "";
+  display: block;
+  width: 50px;
+  height: 1px;
+  background: var(--accent);
+  margin-bottom: 0.8rem;
+  opacity: 0.6;
+}
+
+.leaf__credit {
+  display: block;
+}
+
+.leaf__credit-label {
+  font-style: normal;
+  font-variant-caps: all-small-caps;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+  margin-right: 0.5em;
+  opacity: 0.85;
+}
+
+.leaf__cover-meta {
+  margin: 1.6rem 0 0;
+  font-style: italic;
+  font-size: 0.85rem;
+  color: var(--ink-soft);
+  letter-spacing: 0.04em;
+  opacity: 0.8;
+}
+
+@media (max-width: 760px) {
+  .leaf--cover {
+    grid-template-columns: 1fr;
+    grid-template-rows: 1fr auto;
+    padding: 3rem 2rem;
+    gap: 1.5rem;
+  }
+  .leaf__cover-text {
+    text-align: center;
+    padding: 0;
+  }
+  .leaf__author::before {
+    margin-left: auto;
+    margin-right: auto;
+  }
+}
+
+/* ── Title-card leaves (Part II / Part III) ─────────────── */
+.spread--solo-title {
+  background:
+    radial-gradient(ellipse at center, rgba(184, 36, 44, 0.04) 0%, transparent 60%),
+    var(--paper);
+}
+
+.leaf--title {
+  padding: 6rem 4rem;
+}
+
+.leaf__title-card {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 2.4rem;
+}
+
+.leaf__title-rule {
+  display: block;
+  width: 120px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent) 50%, transparent);
+  opacity: 0.7;
+}
+
+.leaf__part {
+  font-family: var(--display);
+  font-weight: 500;
+  font-size: clamp(3rem, 6vw + 1rem, 6rem);
+  margin: 0;
+  color: var(--ink);
+  letter-spacing: 0.04em;
+  line-height: 1;
+  font-variation-settings: "opsz" 144, "SOFT" 80;
+}
+
+.leaf__part::first-letter { color: var(--accent); }
+
+/* ── End leaf ───────────────────────────────────────────── */
+.leaf--end {
+  padding: 6rem 4rem;
+}
+
+.leaf__end-card {
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 1.5rem;
+}
+
+.leaf__end-ornament {
+  width: 72px;
+  height: 72px;
+  color: var(--accent);
+  display: block;
+  opacity: 0.9;
+}
+
+.leaf__end-text {
+  font-family: var(--display);
+  font-style: italic;
+  font-weight: 500;
+  font-size: clamp(2rem, 3vw + 1rem, 3rem);
+  margin: 0;
+  color: var(--ink);
+  font-variation-settings: "opsz" 144, "SOFT" 100;
+}
+
+.leaf__end-text::first-letter { color: var(--accent); }
+
+.leaf__end-author {
+  margin: 0.5rem 0 0;
+  font-style: italic;
+  color: var(--ink-soft);
+  font-size: 0.92rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+  align-items: center;
+}
+
+/* ── Share UI on the end card ───────────────────────────── */
+.leaf__share {
+  margin-top: 2.4rem;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.9rem;
+}
+
+.leaf__share::before {
+  content: "";
+  display: block;
+  width: 60px;
+  height: 1px;
+  background: linear-gradient(90deg, transparent, var(--accent) 50%, transparent);
+  opacity: 0.6;
+  margin-bottom: 0.4rem;
+}
+
+.leaf__share-prompt {
+  margin: 0;
+  font-style: italic;
+  font-size: 0.92rem;
+  color: var(--ink-soft);
+  letter-spacing: 0.03em;
+}
+
+.leaf__share-row {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: center;
+  gap: 0.5rem 0.7rem;
+}
+
+.share-btn {
+  appearance: none;
+  background: transparent;
+  border: 1px solid rgba(60, 40, 20, 0.25);
+  color: var(--ink);
+  font-family: var(--display);
+  font-size: 0.85rem;
+  font-style: italic;
+  letter-spacing: 0.03em;
+  padding: 0.42rem 0.95rem;
+  border-radius: 999px;
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 180ms;
+  font-variation-settings: "opsz" 14, "SOFT" 50;
+}
+.share-btn:hover {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--paper);
+}
+.share-btn.is-success {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: var(--paper);
+}
+
+.leaf__colophon {
+  margin: 2rem 0 0;
+  font-style: italic;
+  font-size: 0.72rem;
+  color: var(--ink-soft);
+  opacity: 0.7;
+  letter-spacing: 0.03em;
+  max-width: 36ch;
+  text-align: center;
+  line-height: 1.5;
+}
+.leaf__colophon a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: rgba(60, 40, 20, 0.3);
+}
+.leaf__colophon a:hover { color: var(--accent); }
+
+/* ── Decorative ornaments for solo verses ───────────────── */
+.spread--solo-verse .leaf--verse {
+  padding: 4.5rem 4rem;
+}
+
+.spread--solo-verse .leaf__inner {
+  max-width: 46ch;
+  position: relative;
+}
+
+.spread--solo-verse .leaf__inner::before,
+.spread--solo-verse .leaf__inner::after {
+  content: "";
+  display: block;
+  width: 90px;
+  height: 1px;
+  margin: 0 auto;
+  background: linear-gradient(90deg, transparent, var(--accent) 50%, transparent);
+  opacity: 0.6;
+}
+
+.spread--solo-verse .leaf__inner::before { margin-bottom: 2rem; }
+.spread--solo-verse .leaf__inner::after  { margin-top: 2rem; }
+
+.spread--solo-image .leaf--image {
+  padding: 3rem 4rem;
+}
+
+.spread--solo-image .leaf__figure img {
+  max-height: 95%;
+}
+
+/* ── Navigation ─────────────────────────────────────────── */
+.book__nav {
+  position: fixed;
+  bottom: max(1.4rem, env(safe-area-inset-bottom));
+  left: 50%;
+  transform: translateX(-50%);
+  display: flex;
+  align-items: center;
+  gap: 2rem;
+  z-index: 10;
+  color: rgba(246, 239, 225, 0.92);
+  font-family: var(--display);
+}
+
+.book__chev {
+  appearance: none;
+  background: transparent;
+  border: 0;
+  color: inherit;
+  font-family: var(--display);
+  font-size: 3.4rem;
+  line-height: 0.5;
+  padding: 0.5rem 0.7rem;
+  cursor: pointer;
+  transition: color 200ms, transform 200ms, opacity 200ms;
+  font-variation-settings: "opsz" 144, "SOFT" 30;
+  -webkit-font-smoothing: antialiased;
+}
+.book__chev:hover {
+  color: var(--accent-soft);
+  transform: scale(1.12);
+}
+.book__chev:disabled {
+  opacity: 0.22;
+  cursor: default;
+  transform: none;
+}
+
+.book__progress {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.7rem;
+}
+
+.book__progress-bar {
+  width: clamp(180px, 30vw, 320px);
+  height: 2px;
+  background: rgba(246, 239, 225, 0.22);
+  position: relative;
+  overflow: hidden;
+  border-radius: 1px;
+}
+
+.book__progress-fill {
+  display: block;
+  height: 100%;
+  width: 0%;
+  background: var(--accent);
+  box-shadow: 0 0 6px rgba(184, 36, 44, 0.5);
+  transition: width var(--turn);
+}
+
+.book__progress-text {
+  font-style: italic;
+  font-size: 0.95rem;
+  letter-spacing: 0.05em;
+  font-variant-numeric: tabular-nums;
+  font-variation-settings: "opsz" 14, "SOFT" 70;
+}
+.book__progress-sep {
+  margin: 0 0.5em;
+  opacity: 0.55;
+  font-style: normal;
+}
+
+.book__nav-share {
+  appearance: none;
+  background: var(--accent);
+  border: 1px solid var(--accent);
+  color: var(--paper);
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  cursor: pointer;
+  transition: transform 200ms, box-shadow 200ms, background 200ms;
+  position: relative;
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.12) inset,
+    0 6px 14px -6px rgba(184, 36, 44, 0.55),
+    0 0 0 1px rgba(26, 20, 20, 0.25);
+}
+.book__nav-share svg { width: 18px; height: 18px; }
+.book__nav-share:hover {
+  background: #c9313a;
+  transform: translateY(-1px);
+  box-shadow:
+    0 1px 0 rgba(255, 255, 255, 0.18) inset,
+    0 10px 18px -6px rgba(184, 36, 44, 0.7),
+    0 0 0 1px rgba(26, 20, 20, 0.3);
+}
+.book__nav-share-toast {
+  position: absolute;
+  bottom: calc(100% + 0.6rem);
+  left: 50%;
+  transform: translateX(-50%) translateY(4px);
+  background: var(--accent);
+  color: var(--paper);
+  font-family: var(--display);
+  font-style: italic;
+  font-size: 0.78rem;
+  padding: 0.35rem 0.7rem;
+  border-radius: 4px;
+  white-space: nowrap;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 200ms, transform 200ms;
+}
+.book__nav-share-toast.is-visible {
+  opacity: 1;
+  transform: translateX(-50%) translateY(0);
+}
+
+/* ── Edge click zones (desktop) ─────────────────────────── */
+.book__edge {
+  position: fixed;
+  top: 0;
+  bottom: 0;
+  width: 18%;
+  background: transparent;
+  border: 0;
+  cursor: pointer;
+  z-index: 5;
+  outline: none;
+}
+.book__edge--left  { left: 0;  cursor: w-resize; }
+.book__edge--right { right: 0; cursor: e-resize; }
+
+@media (hover: none) {
+  .book__edge { display: none; }
+}
+
+/* ── Responsive: single page on narrow viewports ────────── */
+@media (max-width: 760px) {
+  :root {
+    --spread-w: 100vw;
+    --spread-h: 100vh;
+  }
+  .book__viewport { perspective: none; }
+  .spread {
+    grid-template-columns: 1fr;
+    border-radius: 0;
+    box-shadow: none;
+  }
+  .spread::after { display: none; }
+  .spread .leaf:nth-child(2) { display: none; }
+  .spread.is-mobile-second .leaf:nth-child(1) { display: none; }
+  .spread.is-mobile-second .leaf:nth-child(2) { display: flex; }
+  .leaf { padding: 3rem 1.6rem; }
+  .leaf--image { padding: 2rem 1rem; }
+  .leaf--title, .leaf--end { padding: 4rem 1.6rem; }
+
+  /* Mobile: the cream paper fills the viewport, so flip the nav to
+     ink-on-paper. No pill, no blur — just the same typographic
+     personality as the rest of the book, printed onto the page. */
+  .book__nav {
+    gap: 1.4rem;
+    color: var(--ink);
+  }
+  .book__progress-bar {
+    width: clamp(130px, 36vw, 220px);
+    background: rgba(26, 20, 20, 0.18);
+  }
+  .book__progress-text {
+    color: var(--ink-soft);
+    font-size: 0.88rem;
+  }
+}
+
+/* ── Share landing page (/share/) ───────────────────────── */
+.landing {
+  min-height: 100vh;
+  display: grid;
+  place-items: center;
+  padding: 3rem 1.5rem;
+  background: var(--vignette);
+  background-image: radial-gradient(ellipse at center, #1c1410 0%, #060403 90%);
+}
+
+.landing__inner {
+  background: var(--paper);
+  max-width: 920px;
+  width: 100%;
+  display: grid;
+  grid-template-columns: minmax(0, 5fr) minmax(0, 6fr);
+  gap: 2rem;
+  padding: 3rem 3rem;
+  border-radius: 3px;
+  box-shadow:
+    0 1px 2px rgba(0,0,0,0.25),
+    0 30px 70px -28px rgba(0,0,0,0.6);
+}
+
+.landing__art {
+  display: grid;
+  place-items: center;
+}
+.landing__art img {
+  max-width: 100%;
+  height: auto;
+  mix-blend-mode: multiply;
+}
+
+.landing__text {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
+}
+
+.landing__title {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: clamp(2.4rem, 4vw + 1rem, 4rem);
+  line-height: 0.92;
+  margin: 0 0 0.5rem;
+  color: var(--ink);
+  font-variation-settings: "opsz" 144, "SOFT" 80;
+  letter-spacing: -0.01em;
+}
+.landing__title-the {
+  display: block;
+  font-size: 0.72em;
+}
+.landing__title-the::first-letter { color: var(--accent); }
+.landing__title-main { display: block; }
+
+.landing__byline {
+  margin: 0 0 1.5rem;
+  font-style: italic;
+  color: var(--ink-soft);
+  font-size: 1rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.25rem;
+}
+.landing__byline::before {
+  content: "";
+  display: block;
+  width: 50px;
+  height: 1px;
+  background: var(--accent);
+  opacity: 0.6;
+  margin-bottom: 0.6rem;
+}
+.landing__credit { display: block; }
+.landing__credit-label {
+  font-style: normal;
+  font-variant-caps: all-small-caps;
+  font-weight: 500;
+  letter-spacing: 0.12em;
+  color: var(--accent);
+  margin-right: 0.5em;
+  opacity: 0.85;
+}
+
+.landing__pitch {
+  margin: 0 0 2rem;
+  color: var(--ink);
+  font-size: 1.05rem;
+  line-height: 1.6;
+}
+
+.landing__cta {
+  display: inline-block;
+  align-self: flex-start;
+  background: var(--accent);
+  color: var(--paper);
+  text-decoration: none;
+  font-family: var(--display);
+  font-style: italic;
+  font-size: 1.1rem;
+  padding: 0.8rem 1.6rem;
+  border-radius: 999px;
+  letter-spacing: 0.03em;
+  transition: transform 200ms, box-shadow 200ms;
+  font-variation-settings: "opsz" 14, "SOFT" 70;
+}
+.landing__cta:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px -8px rgba(184, 36, 44, 0.6);
+}
+
+.landing__meta {
+  margin: 1.4rem 0 0;
+  font-style: italic;
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  opacity: 0.75;
+  letter-spacing: 0.04em;
+}
+
+@media (max-width: 760px) {
+  .landing__inner {
+    grid-template-columns: 1fr;
+    padding: 2rem 1.4rem;
+  }
+}
+
+/* ── Generic content page (/about/, etc.) ───────────────── */
+.page {
+  min-height: 100vh;
+  display: grid;
+  place-items: start center;
+  padding: 4rem 1.5rem;
+  background: var(--vignette);
+  background-image: radial-gradient(ellipse at center, #1c1410 0%, #060403 90%);
+}
+
+.page__inner {
+  background: var(--paper);
+  max-width: 680px;
+  width: 100%;
+  padding: 3.5rem 3.5rem;
+  border-radius: 3px;
+  box-shadow:
+    0 1px 2px rgba(0,0,0,0.25),
+    0 30px 70px -28px rgba(0,0,0,0.6);
+}
+
+.page__header {
+  margin-bottom: 2.2rem;
+  text-align: center;
+}
+
+.page__eyebrow {
+  margin: 0 0 0.4rem;
+  font-family: var(--display);
+  font-style: italic;
+  font-size: 0.82rem;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: var(--accent);
+  opacity: 0.8;
+}
+
+.page__title {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: clamp(2.2rem, 3.5vw + 1rem, 3.4rem);
+  line-height: 1;
+  margin: 0;
+  color: var(--ink);
+  font-variation-settings: "opsz" 144, "SOFT" 80;
+}
+.page__title::first-letter { color: var(--accent); }
+
+.page__body {
+  font-family: var(--serif);
+  font-size: 1.06rem;
+  line-height: 1.7;
+  color: var(--ink);
+}
+.page__body h2 {
+  font-family: var(--display);
+  font-weight: 600;
+  font-size: 1.3rem;
+  margin: 2rem 0 0.6rem;
+  color: var(--ink);
+  font-variation-settings: "opsz" 144, "SOFT" 70;
+}
+.page__body p { margin: 0 0 1.1rem; }
+.page__body a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-color: rgba(184, 36, 44, 0.35);
+}
+.page__body a:hover { text-decoration-color: var(--accent); }
+
+.page__footer {
+  margin-top: 2.8rem;
+  padding-top: 1.8rem;
+  border-top: 1px solid rgba(60, 40, 20, 0.18);
+  text-align: center;
+}
+
+.page__cta {
+  display: inline-block;
+  background: var(--accent);
+  color: var(--paper);
+  text-decoration: none;
+  font-family: var(--display);
+  font-style: italic;
+  font-size: 1rem;
+  padding: 0.72rem 1.5rem;
+  border-radius: 999px;
+  letter-spacing: 0.03em;
+  transition: transform 200ms, box-shadow 200ms;
+  font-variation-settings: "opsz" 14, "SOFT" 70;
+}
+.page__cta:hover {
+  transform: translateY(-1px);
+  box-shadow: 0 8px 20px -8px rgba(184, 36, 44, 0.6);
+}
+
+.page__meta {
+  margin: 1.4rem 0 0;
+  font-style: italic;
+  font-size: 0.78rem;
+  color: var(--ink-soft);
+  opacity: 0.75;
+}
+.page__meta a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: rgba(60, 40, 20, 0.3);
+}
+
+@media (max-width: 760px) {
+  .page { padding: 2rem 1rem; }
+  .page__inner { padding: 2.4rem 1.6rem; }
+}
+
+/* ── Reduce motion ──────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  :root { --turn: 0ms; }
+  .spread { transition: none; }
+}
+
+/* ── Keyboard focus ─────────────────────────────────────── */
+:focus-visible {
+  outline: 2px solid var(--accent-soft);
+  outline-offset: 2px;
+  border-radius: 4px;
+}

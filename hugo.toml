@@ -1,0 +1,21 @@
+baseURL = "/"
+languageCode = "en-au"
+title = "The Great Cocky"
+enableRobotsTXT = true
+
+[params]
+author = "Paul Upperton"
+illustrator = "Paul Brandner"
+description = "An allegorical picture book about the rise of a tyrannical Cockatoo."
+copyrightYear = "2026"
+licence = "CC BY-NC-ND 4.0"
+licenceUrl = "https://creativecommons.org/licenses/by-nc-nd/4.0/"
+# Subdomain on goatcounter.com — leave blank to disable analytics.
+# Sign up free at https://www.goatcounter.com/signup
+goatcounter = ""
+
+[markup.goldmark.renderer]
+unsafe = true
+
+[build]
+writeStats = false

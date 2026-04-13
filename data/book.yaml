@@ -1,0 +1,468 @@
+# The Great Cocky — book content
+#
+# Each leaf is one logical unit (a verse, an illustration, a title page).
+# Leaves are grouped into spreads by the template:
+#   - cover/title/end stand alone
+#   - verse + adjacent image → paired spread
+#   - two adjacent text-only verses → paired text spread
+#   - two adjacent images → paired image spread
+#
+# To reorder content, just move the leaves below.
+#
+# Quotation convention:
+#   - Outer dialogue uses curly double quotes “…”
+#   - Nested dialogue uses curly single quotes ‘…’
+#   - Apostrophes are curly right-single ’ (e.g. don’t, it’s, ’Til)
+
+leaves:
+  # ── Front matter ──────────────────────────────────────────
+  - kind: cover
+    image: 01-cover.png
+    title: The Great Cocky
+    subtitle: ""
+
+  # ── Part I ────────────────────────────────────────────────
+  - kind: verse
+    text: |
+      There’s trouble at home, your parents are squabbling,
+      Dinner’s not cooked and your whole world is wobbling.
+      You retreat down the hallway and flop on your bed.
+      You wish they’d un-say the things that they said.
+
+      As you lie on your back and stare at the ceiling,
+      Shadows close in like the things that you’re feeling,
+      You hope that quite soon it will all settle down
+      And the tick of the clock is such a comforting sound.
+      You let your mind float; you relax and breathe deep,
+      And soon you’re drifting to a land beyond sleep…
+
+  - kind: image
+    image: 02-bedroom.png
+    alt: A child curled on a red bed in a darkened room, a mobile of birds turning above.
+
+  - kind: verse
+    text: |
+      … to get there you simply float out your door;
+      Take a sharp right, then go right once more.
+      Go far from the centre, drift along by the river;
+      Shrug off the strange chill that gnaws at your liver.
+
+      Follow the rails past boarded-up stores,
+      Avoiding the puddles where the ice never thaws.
+      Pull your coat tightly, wind your scarf rightly;
+      Flee those dark thoughts that come to you nightly.
+      Ignore the stray dogs that nip at your heels,
+      And their breath as sour as distant ice fields.
+
+  - kind: image
+    image: 03-street-dogs.png
+    alt: A child in a yellow coat hurries down a back street, chased by snarling dogs.
+
+  - kind: verse
+    text: |
+      When the dogs stop snarling and the rails peter out,
+      When you’re no longer sure just where you’re about,
+      You’ll see a last platform with an air quite bereft.
+      Just sit there and wait for a train going left.
+
+      And while you sit there, if you feel a bit flat,
+      Think of hot cocoa and nice things like that.
+      But just when you’re settled and start looking round,
+      The platform erupts with a great mocking sound.
+      It’s a manic crescendo of hysterical laughter
+      And the source of that sound sits high on a rafter.
+
+  - kind: image
+    image: 04-station.png
+    alt: An old station platform under iron rafters; a small figure waits on a bench.
+
+  - kind: verse
+    text: |
+      Deep in the gloom is a wise-looking creature -
+      An old kookaburra with the look of a teacher.
+      His eyes drill right through you, they fill you with fear.
+      What on earth could he be doing up there!
+
+      He beckons you close with a long, ragged feather,
+      One nibbled by moths and years of damp weather.
+      Your feet shuffle nearer, despite feelings of danger -
+      What was it Mum said about talking to strangers?
+      Who could this be in a rumpled brown suit?
+      And what’s that strange odour like over-ripe fruit?
+
+  - kind: image
+    image: 05-kooka-portrait.png
+    alt: An old kookaburra in a rumpled mustard waistcoat, perched and peering through pince-nez glasses.
+
+  - kind: verse
+    text: |
+      But up close he’s not scary - more broken and sad.
+      You’d almost feel pity if that smell was less bad.
+      He asks you a question in a voice barely heard;
+      A dry-as-dust rasp from a very old bird.
+
+      And the question he asks you is so hard to answer;
+      It pricks like a thorn in the shoe of a dancer.
+      “What did *you* do,” you hear the voice say,
+      “When the Great Cocky made his big play?”
+      Of what does he speak, in that voice high and wheezy?
+      And why do you feel so strange and uneasy?
+
+  - kind: image
+    image: 06-kooka-closeup.png
+    alt: A close-up of the kookaburra's wise, weary face, his pince-nez slipping down his beak.
+
+  - kind: verse
+    text: |
+      He draws himself up, as if playing a part,
+      And his words squeeze forth like the sneakiest fart:
+      “We were *all* there, so it’s no use pretending.
+      *We* made this mess that seems so unending.”
+
+      “So you wish to deny it; I see that you would,
+      But I insist that you listen, and you certainly should!”
+      He beckons you over, as if in cahoots
+      And you cover your nose at the smell of old fruit.
+      “Let me tell you a story,” he wheezes and squawks,
+      “Of a once-great land ruled by eagles and hawks.”
+
+  - kind: verse
+    text: |
+      “Lalaland was its name and you’ll think that’s absurd,
+      But it’s not at all odd if you think like a bird
+      That has its head in the sand and its tail in the air –
+      When things are up-ended you’ll know that you’re near.”
+
+      “Lalaland is the place you find yourself in
+      When your maps run out and your compasses spin.
+      You go over mountains, through steep winding passes,
+      And there lies a marsh where the greener grass is.
+      This is a place unlike any you’ve seen,
+      A glittering wetland where birds rule supreme.”
+
+  - kind: verse
+    text: |
+      The old bird sighs deeply as he ponders past times
+      (Again there’s that whiff of old melons and limes).
+      His brow is furrowed with immense concentration
+      - Or perhaps it’s the grip of intense constipation?
+
+      Whatever, you wish he’d get on with his telling,
+      So you can escape the smell that you’re smelling.
+      He soon recovers from whatever was pressing,
+      And his voice gets husky as he starts reminiscing:
+      “Lalaland *once* was a place most precious to me;
+      It was the land of the brave and the land of the free.”
+
+  - kind: image
+    image: 07-wetland-a.png
+    pair: wetland
+    alt: A wide wetland under a vast blue sky, light streaming through clouds, flocks of birds wheeling above.
+
+  - kind: image
+    image: 08-wetland-b.png
+    pair: wetland
+    alt: The wetland from another angle — a red-capped bird in the foreground, reeds and silver water.
+
+  - kind: verse
+    text: |
+      “Oh, the birds that were found in that *wonderful* place!
+      Birds of one species, though not of one race:
+      Birds that were brown, red-necked and fair;
+      Every hue of the rainbow together lived there.”
+
+      “There were ibis and emus, quail and wrens;
+      Brolgas that danced and flocks of wood hens.
+      And above the great swamp, aloof beyond care,
+      Swung the eagles and hawks, lords of the air.
+      There was pecking and jostling, but most got along,
+      ’Til Cocky split us all with his discordant song.”
+
+  - kind: verse
+    text: |
+      “A few birds admired him, but most weren’t impressed
+      For he was quite a small cocky despite his large crest.
+      When he strutted and preened and sent forth his tweets,
+      We Kookaburras chuckled, but not those on the street.”
+
+      “They loved what they heard from this plain-speaking bird
+      And swallowed without question his worm-twitching words.”
+      Kooka pauses and shrugs and looks all around
+      As he struggles to explain how Cocky got off the ground.
+      “Cocky wasn’t just famous for the things that he said;
+      It was also because of that *thing* on his head.”
+
+  - kind: verse
+    text: |
+      “He was red-faced and bossy, with fairy-floss hair,
+      That he combed from somewhere below his left ear.
+      But his mates were galahs, not known for their smarts,
+      Who took no exception to that hair and that part!”
+
+      “He pooped in their nests, but they seemed not to mind,
+      For he had them believing he was one of their kind:
+      One who worked for his crust and hedged all his bets,
+      Who gambled responsibly and honoured his debts.
+      He was none of these things, just tawdry and shallow,
+      With mean little eyes and a quiff far too yellow.”
+
+  - kind: verse
+    text: |
+      “To look at him now, you’d think I was crazy
+      If I told you, when young, he’d an eye for the ladies.
+      He’d peck and pursue each plump partridge he saw;
+      No tail feather was safe from his beak or his claw.”
+
+      “Oh, the preening and plucking of an old bird that is vain!
+      He’d pluck out grey feathers while wincing with pain.
+      But flocks soon gathered when he waved from his bower,
+      Convinced one so lofty must have the power
+      To find hidden worms and root out the grubs -
+      Ideas gobbled greedily by those in the scrub.”
+
+  - kind: verse
+    text: |
+      “His galahs soon built him a great nesting tower,
+      But for wages got nothing but a filthy great shower
+      Of husks and worms and hollowed-out shells;
+      Trickle-down rubbish that fooled them quite well.”
+
+      “A few *did* protest and elbowed and fought
+      But the lawsuits they brought were tossed out of court.
+      Cocky fled from his debts, the whole toxic brew,
+      He rose like a phoenix and burned them anew!
+      I see,” says the Kooka, “the surprise in your eyes,
+      But folks have *always* been duped by peddlers of lies.”
+
+  - kind: verse
+    text: |
+      Here the old bird leans forward as if to confide.
+      His wing’s on your shoulder as he takes you aside.
+      “Now with regard to the swamp, let’s be perfectly frank
+      Some parts were wholesome - but other parts stank.”
+
+      “Not every bird prospered, despite how they scrabbled
+      Some bad eggs were hatched but most were just addled.
+      And while troubles were many, goodwill abounded;
+      Things were not near as bad as they sounded
+      When the Great Cocky began his campaign
+      To end migration and ‘make the swamp great again.’”
+
+  - kind: verse
+    text: |
+      “He flew far and wide, squawking his call -
+      And the screech was so raucous the echoes reached all.
+      What did he promise, this cleverest of birds?
+      Answers so simple they were almost absurd.”
+
+      “‘I’ll find food a-plenty; I’ll soon restore order,
+      I’ll grow a great hedge along the south border.
+      I’ll keep out those birds that do not belong,
+      Like those migrating terns that whistle strange songs.’
+      And at first, we all chuckled, as kookaburras will,
+      For who would believe one so cocky and shrill?”
+
+  - kind: verse
+    text: |
+      “But we were sadly mistaken; our faith was misplaced:
+      Our great flock was splintered by colour and race.
+      The wrens stopped calling, the egrets grew stooped,
+      The brolgas abandoned their high-stepping troupe.”
+
+      “A swamp that once throbbed with colour and life
+      Turned in on itself, divided by strife.”
+      The Kooka here pauses and tries to explain:
+      “There were fears in the swamp that were causing great pain.
+      ‘They’re stealing our grubs,’ some birds would cry,
+      And then along came a Cocky who claimed to know why!”
+
+  # ── Part II ───────────────────────────────────────────────
+  - kind: title
+    title: Part II
+    number: II
+
+  - kind: verse
+    text: |
+      “Now all knew the swamp had been settled in waves
+      Of the very same birds that now ranted and raved.
+      Their forebears too had flown to these shores,
+      But this awkward truth they chose to ignore.”
+
+      “We native kookas, who’d lived there *forever*,
+      Felt an ironic breeze ruffle our feathers.
+      We cried, ‘That’s a bit rich! Why all the fuss?
+      *Way back* this swamp belonged to just *us*!’
+      We made a good pitch, but no one was buying.
+      They were too busy listening to the Great Cocky lying.”
+
+  - kind: verse
+    text: |
+      Old Kooka goes quiet; he’s shaking his head.
+      He is clearly still shaken by whatever was said.
+      But your toes have gone numb and both your ears ache;
+      You can’t help but wonder how much longer he’ll take…
+
+      So you implore him: “go on; tell how it ends.
+      Did the brown and the fair and the terns make amends?
+      And what of that hedge that the Cocky proposed?
+      Did many support it - or were most birds opposed?
+      For surely,” (you say) “all birds were aware
+      A hedge is no answer in a world that’s not fair.”
+
+  - kind: verse
+    text: |
+      Kooka nods and concedes, “That is certainly true,
+      But not all see as clearly as fledglings do.
+      Strange things happen as our pinions grow,
+      And the patterns that mark us begin to show.”
+
+      “We forget we’re one flock, that we’re all birds at heart;
+      We focus instead on what sets us apart.
+      Whether it’s a rainbow of colours, or none whatsoever,
+      Some cannot see the bird for the feathers.
+      So, while we sit here and wait for a train that won’t come,
+      Let me tell you what happened - if your bum’s not too numb.”
+
+  - kind: verse
+    text: |
+      “I know what you hope for, but the next bit gets grim,
+      So brace for bad news and strap yourself in.
+      The Cocky did exactly what he said he would do.
+      He planted that hedge and he smiled as it grew.”
+
+      “Though the soil was bitter and salted with tears,
+      That hedge kept on growing, year after year.
+      A few birds protested and called it a blight,
+      But its snaking branches soon blocked out the light.
+      This was a price most were willing to pay
+      If those birds from the south were now kept away.”
+
+  - kind: verse
+    text: |
+      “There was a lot of support, in the short term -
+      Especially from those who now got more worms.
+      But as time went by many started to yearn
+      For the strange, mournful songs once sung by the terns.”
+
+      “Once the great hedge had reached its full height,
+      It cast long shadows that blocked out the light.
+      The wetland grew chill; the reeds stopped waving.
+      Most couldn’t recall what it was they’d been saving.
+      And when the swamp grew still as evening descended,
+      We knew in our hearts something lovely had ended.”
+
+  - kind: verse
+    text: |
+      “The marsh became drab with less sun and more shade;
+      The lorikeets called off their rainbow parades.
+      Most birds stopped flying, with no places to go,
+      Mired in the swamp, they grew heavy and slow.”
+
+      “As we pondered the changes since Cocky’s star had risen
+      We realized - too late - the hedge was a prison.
+      But when word reached the Cocky of unrest in the flock,
+      His face went bright red and he went off his block!
+      His hired crows were treated to a threatening tirade:
+      ‘If it’s circuses they want, *I’ll* give them parades!’”
+
+  - kind: verse
+    text: |
+      “All birds were summoned to the swamp’s biggest clearing,
+      And crows in black greatcoats led the loud cheering.
+      A black claw on yellow hung over the stage
+      And in front stood the Great Cocky, quivering with rage.”
+
+      “His voice when he spoke started low and grew shrill
+      And in spite of themselves some birds felt a thrill.
+      ‘Birds of the Lalaland, so you want a parade?
+      Let’s see how you like this new one I made!’
+      As he gave a curt signal and raised his right thumb,
+      In marched squadrons of geese to the beat of a drum.”
+
+  - kind: verse
+    text: |
+      “He sneered, ‘Those brolgas that dance once had their uses,
+      But what say you now to my high-stepping gooses?’
+      The geese kept on coming, and we all noted with dread
+      The small crests of yellow on top of each head.”
+
+      “The great flock went quiet at the tread of those feet
+      And Great Cocky’s victory seemed almost complete.”
+      “Tell me,” you plead, “that you didn’t let him win!”
+      Kooka shakes his old head and tickles your chin.
+      “Like all those before him who tried the same thing,
+      That turkey got his Thanksgiving and *boy* did it sting!”
+
+  - kind: image
+    image: 09-parade-a.png
+    pair: parade
+    alt: A clamour of geese with small yellow crests, marshalled by black-coated crows beneath a banner with a yellow sigil.
+
+  - kind: image
+    image: 10-parade-b.png
+    pair: parade
+    alt: The parade closes in — a pink galah and white cockatoos look on as the geese march past the hedge.
+
+  - kind: verse
+    text: |
+      “Do you recall how he plucked out all feathers of grey?
+      Well he did this for years ’til finally one day,
+      When he was on stage, screeching loathing and fear,
+      The voice of a bellbird rang out pure and clear.”
+
+      “Though but a fledgling, with a voice fluting not strident,
+      Her pure young note struck the flock silent.
+      ‘Why’s he so angry? What’s he squawking about?
+      What’s that thing on his head that bobs when he shouts?’
+      And then came the question that began his downfall:
+      ‘How come that Cocky has no feathers at all?’”
+
+  - kind: verse
+    text: |
+      “A great intake of breath greeted these words
+      The truth had been spoken by the youngest of birds.
+      All that vain preening had brought him unstuck
+      And we suddenly realised the Great Cocky was plucked!”
+
+      “As that note rippled outward like the toll of a bell,
+      The crowd stirred to life, as if released from a spell.
+      A murmuring began within that great throng
+      As a thousand throats cleared and burst into song.
+      An old anthem rang out, borne aloft on the breeze:
+      ‘… the land of the brave and the land of the free.’”
+
+  # ── Part III ──────────────────────────────────────────────
+  - kind: title
+    title: Part III
+    number: III
+
+  - kind: verse
+    text: |
+      “And *that*, my young friend, is the end of my tale.
+      Now you’d better get home, you’re looking quite pale.
+      It seems that our train has not yet come through,
+      But like that young bellbird, there’re things you can do.”
+
+      “Speak up and speak plainly whenever you should,
+      Stand up and defend the things that are good.”
+      With these last words, Kooka fades in the gloom…
+      …Replaced by the mobile that hangs in your room.
+      The sound of a chuckle floats through the door
+      And you tip-toe towards it, confused and unsure.
+
+  - kind: verse
+    text: |
+      You find Mum laughing at something Dad said
+      As you enter they greet you, “Hey Sleepyhead!
+      We called you for dinner, but we don’t think you heard.
+      When we went in, you were away with the birds.”
+
+      You look at them oddly; are they playing a joke?
+      You didn’t imagine those words that they spoke.
+      Mum reads your expression and gathers you in,
+      You nestle your head up under her chin.
+      Her voice murmurs softly from somewhere above:
+      “No matter the squabble, in the end there is love.”
+
+  - kind: end
+    text: The End

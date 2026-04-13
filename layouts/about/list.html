@@ -1,0 +1,22 @@
+{{ define "main" }}
+{{- $home := "" | absURL -}}
+<main class="page">
+  <article class="page__inner">
+    <header class="page__header">
+      <p class="page__eyebrow">The Great Cocky</p>
+      <h1 class="page__title">{{ .Title }}</h1>
+    </header>
+    <div class="page__body">
+      {{ .Content }}
+    </div>
+    <footer class="page__footer">
+      <a class="page__cta" href="{{ $home }}?ref=about">Read the book →</a>
+      <p class="page__meta">
+        © {{ site.Params.copyrightYear }} {{ site.Params.author }} &amp; {{ site.Params.illustrator }}.
+        Licensed under
+        <a href="{{ site.Params.licenceUrl }}" target="_blank" rel="noopener">{{ site.Params.licence }}</a>.
+      </p>
+    </footer>
+  </article>
+</main>
+{{ end }}

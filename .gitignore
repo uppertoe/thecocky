@@ -1,0 +1,16 @@
+# Hugo build output
+/public/
+/resources/_gen/
+.hugo_build.lock
+
+# Editor + OS
+.DS_Store
+*.swp
+.idea/
+.vscode/
+.claude
+
+text-content.pdf
+
+# Node (in case npm deps get added later)
+node_modules/

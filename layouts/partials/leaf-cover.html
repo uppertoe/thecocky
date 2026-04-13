@@ -1,0 +1,19 @@
+{{- $leaf := .leaf -}}
+{{- $img := resources.Get (printf "images/%s" $leaf.image) -}}
+{{- $w := $img.Resize "1400x webp q90" -}}
+<article class="leaf leaf--cover" data-kind="cover" data-index="{{ .index }}">
+  <div class="leaf__cover-art">
+    <img src="{{ $w.RelPermalink }}" alt="Cover illustration: an angry cockatoo in a red tie" width="{{ $w.Width }}" height="{{ $w.Height }}">
+  </div>
+  <div class="leaf__cover-text">
+    <h1 class="leaf__title">
+      <span class="leaf__title-the">The</span>
+      <span class="leaf__title-main">Great<br>Cocky</span>
+    </h1>
+    <p class="leaf__author">
+      <span class="leaf__credit"><span class="leaf__credit-label">Story</span> {{ site.Params.author }}</span>
+      <span class="leaf__credit"><span class="leaf__credit-label">Illustrations</span> {{ site.Params.illustrator }}</span>
+    </p>
+    {{ with .minutes }}<p class="leaf__cover-meta">A {{ . }}-minute read</p>{{ end }}
+  </div>
+</article>

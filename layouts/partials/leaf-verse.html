@@ -1,0 +1,34 @@
+{{- $leaf := .leaf -}}
+<article class="leaf leaf--verse" data-kind="verse" data-index="{{ .index }}">
+  <div class="leaf__inner">
+    <div class="leaf__verse">
+      {{- $stanzas := split (trim $leaf.text "\n ") "\n\n" -}}
+      {{- range $si, $stanza := $stanzas -}}
+        <p class="stanza">
+          {{- $lines := split (trim $stanza "\n ") "\n" -}}
+          {{- range $li, $line := $lines -}}
+            {{- $trimmed := trim $line " " -}}
+            {{/* italic markers: *word* → <em>word</em> */}}
+            {{- $html := replaceRE `\*([^*]+)\*` "<em>$1</em>" $trimmed -}}
+            {{- if eq $li 0 -}}
+              {{/* find the first letter and split there */}}
+              {{- $matches := findRESubmatch `^([\p{P}\p{Zs}…]*)([\p{L}])(.*)$` $html 1 -}}
+              {{- if $matches -}}
+                {{- $lead := index (index $matches 0) 1 -}}
+                {{- $cap := index (index $matches 0) 2 -}}
+                {{- $tail := index (index $matches 0) 3 -}}
+                {{- with $lead }}<span class="leadin">{{ . | safeHTML }}</span>{{ end -}}
+                <span class="dropcap">{{ $cap }}</span>{{ $tail | safeHTML }}
+              {{- else -}}
+                {{ $html | safeHTML }}
+              {{- end -}}
+            {{- else -}}
+              {{ $html | safeHTML }}
+            {{- end -}}
+            {{- if ne $li (sub (len $lines) 1) }}<br>{{ end -}}
+          {{- end -}}
+        </p>
+      {{- end -}}
+    </div>
+  </div>
+</article>

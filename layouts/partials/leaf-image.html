@@ -1,0 +1,8 @@
+{{- $leaf := .leaf -}}
+{{- $img := resources.Get (printf "images/%s" $leaf.image) -}}
+{{- $w := $img.Resize "1400x webp q90" -}}
+<article class="leaf leaf--image" data-kind="image" data-index="{{ .index }}"{{ with $leaf.pair }} data-pair="{{ . }}"{{ end }}>
+  <figure class="leaf__figure">
+    <img src="{{ $w.RelPermalink }}" alt="{{ $leaf.alt }}" width="{{ $w.Width }}" height="{{ $w.Height }}" loading="lazy">
+  </figure>
+</article>
