@@ -116,6 +116,12 @@ html.js .spread {
      spreads are flat layers inside it. */
   box-shadow: none;
   border-radius: 0;
+}
+
+/* Only promote the two spreads that are actually animating — promoting
+   every spread blows past the browser's will-change memory budget. */
+html.js .spread.is-active,
+html.js .spread.is-leaving {
   will-change: transform, opacity;
 }
 
