@@ -40,10 +40,8 @@
   let current = 0;
   let lastSpreadIdx = -1;
 
-  // Read the transition duration from the CSS variable so JS and CSS
-  // stay in sync — if --turn changes, the leaving-class cleanup follows.
   const turnMs = (() => {
-    const raw = getComputedStyle(document.documentElement).getPropertyValue('--turn').trim();
+    const raw = getComputedStyle(document.documentElement).getPropertyValue('--turn-dur').trim();
     if (raw.endsWith('ms')) return parseFloat(raw);
     if (raw.endsWith('s'))  return parseFloat(raw) * 1000;
     return 420;
@@ -68,11 +66,19 @@
 
       if (isActive) {
         el.classList.remove('is-leaving');
+        // Toggle the half BEFORE replaying the animation so the
+        // newly visible leaf is the one that slides in.
+        el.classList.toggle('is-mobile-second', target.half === 1);
+        // Force-replay the entrance animation on every turn — including
+        // within-pair half swaps on mobile — so every transition feels
+        // the same as a cross-spread page turn.
+        if (el.classList.contains('is-active')) {
+          el.classList.remove('is-active');
+          void el.offsetWidth;
+        }
         el.classList.add('is-active');
       } else {
         if (wasActive && changed) {
-          // Mark the outgoing spread so it animates out in the
-          // current direction, then drop the class after the turn.
           el.classList.remove('is-active');
           el.classList.add('is-leaving');
           setTimeout(() => el.classList.remove('is-leaving'), turnMs + 40);
@@ -80,10 +86,10 @@
           el.classList.remove('is-active');
           el.classList.remove('is-leaving');
         }
+        el.classList.remove('is-mobile-second');
       }
 
       el.setAttribute('aria-hidden', isActive ? 'false' : 'true');
-      el.classList.toggle('is-mobile-second', isActive && target.half === 1);
     });
 
     lastSpreadIdx = newSpreadIdx;

@@ -3,6 +3,6 @@
 {{- $w := $img.Resize "1400x webp q90" -}}
 <article class="leaf leaf--image" data-kind="image" data-index="{{ .index }}"{{ with $leaf.pair }} data-pair="{{ . }}"{{ end }}>
   <figure class="leaf__figure">
-    <img src="{{ $w.RelPermalink }}" alt="{{ $leaf.alt }}" width="{{ $w.Width }}" height="{{ $w.Height }}" loading="lazy">
+    <img src="{{ $w.RelPermalink }}" alt="{{ $leaf.alt }}" width="{{ $w.Width }}" height="{{ $w.Height }}" loading="eager" decoding="async" fetchpriority="{{ if le .index 2 }}high{{ else }}auto{{ end }}">
   </figure>
 </article>
