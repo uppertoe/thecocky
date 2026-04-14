@@ -825,8 +825,38 @@ html:not(.js) .book__edge { display: none; }
   .spread.is-mobile-second .leaf:nth-child(1) { display: none; }
   .spread.is-mobile-second .leaf:nth-child(2) { display: flex; }
   .leaf { padding: 3rem 1.6rem; }
+  /* Desktop uses asymmetric padding so the two halves sit tight against
+     the gutter. On mobile each leaf is the whole page — reset to
+     symmetric so content sits centred, not offset. */
+  .leaf:first-child,
+  .leaf:last-child,
+  .spread--solo .leaf {
+    padding-left: 1.6rem;
+    padding-right: 1.6rem;
+  }
   .leaf--image { padding: 2rem 1rem; }
   .leaf--title, .leaf--end { padding: 4rem 1.6rem; }
+
+  /* Stitched image pairs anchor their halves at the gutter on desktop
+     (object-position 100%/0%). On mobile each half stands alone, so
+     show it in full, centred, instead of cropped to one edge. */
+  .spread--stitched-image .leaf--image {
+    padding: 2rem 1rem;
+  }
+  .spread--stitched-image .leaf__figure img {
+    max-width: 100%;
+    max-height: 100%;
+    width: auto;
+    height: auto;
+    object-fit: contain;
+    object-position: center center;
+  }
+
+  /* Verse leaves: make sure the inner column is actually centred. */
+  .leaf--verse .leaf__inner {
+    margin-left: auto;
+    margin-right: auto;
+  }
 
   /* Mobile: the cream paper fills the viewport, so flip the nav to
      ink-on-paper. No pill, no blur — just the same typographic
