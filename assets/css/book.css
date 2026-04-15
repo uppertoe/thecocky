@@ -81,7 +81,10 @@ html.js .book {
   inset: 0;
   display: grid;
   place-items: center;
-  padding: 0;
+  /* Reserve room at the bottom for the fixed nav so the viewport's
+     bottom edge never clips into the nav text. The padding box becomes
+     the centering area, so the book shifts up by half this amount. */
+  padding: 0 0 5rem 0;
   max-width: none;
 }
 
@@ -191,7 +194,14 @@ html:not(.js) .book__edge { display: none; }
 /* ── Verse leaf ─────────────────────────────────────────── */
 .leaf--verse .leaf__inner {
   width: 100%;
-  max-width: 38ch;
+  /* Wide enough to hold the longest authored couplet lines on a single
+     line so the centred verse doesn't wrap into runts. */
+  max-width: 60ch;
+}
+/* Paired verse spreads give each verse only half the spread width, so
+   keep them tighter — the font shrinks alongside (see below). */
+.spread--double-verse .leaf--verse .leaf__inner {
+  max-width: 42ch;
 }
 
 .leaf__verse {
@@ -212,6 +222,10 @@ html:not(.js) .book__edge { display: none; }
 
 .stanza {
   margin: 0 0 1.4em;
+  /* Rebalance centred lines so no stanza ends on a single-word runt.
+     Supported by Chrome 114+, Firefox 121+, Safari 17.5+; older browsers
+     fall back to the default greedy wrapper (unchanged from today). */
+  text-wrap: balance;
 }
 .stanza:last-child { margin-bottom: 0; }
 
@@ -479,7 +493,7 @@ html:not(.js) .book__edge { display: none; }
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 1.5rem;
+  gap: 1.1rem;
 }
 
 .leaf__end-ornament {
@@ -494,7 +508,7 @@ html:not(.js) .book__edge { display: none; }
   font-family: var(--display);
   font-style: italic;
   font-weight: 500;
-  font-size: clamp(2rem, 3vw + 1rem, 3rem);
+  font-size: clamp(1.8rem, 2vw + 1rem, 2.5rem);
   margin: 0;
   color: var(--ink);
   font-variation-settings: "opsz" 144, "SOFT" 100;
@@ -515,11 +529,11 @@ html:not(.js) .book__edge { display: none; }
 
 /* ── Share UI on the end card ───────────────────────────── */
 .leaf__share {
-  margin-top: 2.4rem;
+  margin-top: 0.6rem;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 0.9rem;
+  gap: 0.6rem;
 }
 
 .leaf__share::before {
@@ -529,15 +543,6 @@ html:not(.js) .book__edge { display: none; }
   height: 1px;
   background: linear-gradient(90deg, transparent, var(--accent) 50%, transparent);
   opacity: 0.6;
-  margin-bottom: 0.4rem;
-}
-
-.leaf__share-prompt {
-  margin: 0;
-  font-style: italic;
-  font-size: 0.92rem;
-  color: var(--ink-soft);
-  letter-spacing: 0.03em;
 }
 
 .leaf__share-row {
@@ -575,7 +580,7 @@ html:not(.js) .book__edge { display: none; }
 }
 
 .leaf__colophon {
-  margin: 2rem 0 0;
+  margin: 1rem 0 0;
   font-style: italic;
   font-size: 0.72rem;
   color: var(--ink-soft);
@@ -627,15 +632,17 @@ html:not(.js) .book__edge { display: none; }
 /* ── Navigation ─────────────────────────────────────────── */
 .book__nav {
   position: fixed;
-  bottom: max(1.4rem, env(safe-area-inset-bottom));
+  bottom: max(1.2rem, env(safe-area-inset-bottom));
   left: 50%;
   transform: translateX(-50%);
   display: flex;
   align-items: center;
   gap: 2rem;
   z-index: 10;
-  color: rgba(246, 239, 225, 0.92);
   font-family: var(--display);
+  /* A single warm mid-grey that has usable contrast against both the
+     cream paper and the dark vignette — no background plate needed. */
+  color: #8a7f72;
 }
 
 .book__chev {
@@ -675,7 +682,9 @@ html:not(.js) .book__edge { display: none; }
      the painted track at content-box size so the visual stays thin. */
   padding: 14px 0;
   box-sizing: content-box;
-  background: rgba(246, 239, 225, 0.22);
+  /* Track inherits from the nav ink so it stays visible on both
+     cream and dark backgrounds without a plate behind the nav. */
+  background: color-mix(in srgb, currentColor 35%, transparent);
   background-clip: content-box;
   position: relative;
   border-radius: 1px;
@@ -694,7 +703,7 @@ html:not(.js) .book__edge { display: none; }
 }
 .book__progress-bar.is-scrubbing,
 .book__progress-bar:hover {
-  background-color: rgba(246, 239, 225, 0.36);
+  background-color: color-mix(in srgb, currentColor 55%, transparent);
 }
 
 .book__progress-fill {
@@ -913,8 +922,13 @@ html:not(.js) .book__edge { display: none; }
      ink-on-paper. No pill, no blur — just the same typographic
      personality as the rest of the book, printed onto the page. */
   .book__nav {
-    gap: 1.4rem;
+    gap: 0.6rem;
     color: var(--ink);
+    padding: 0;
+    background: transparent;
+    backdrop-filter: none;
+    -webkit-backdrop-filter: none;
+    box-shadow: none;
   }
   .book__progress-bar {
     width: clamp(130px, 36vw, 220px);
