@@ -1,6 +1,6 @@
 # TODO: set this to the production URL before deploying — the canonical
 # link, OG image, sitemap, and JSON-LD all resolve through it.
-baseURL = "https://example.com/"
+baseURL = "https://thegreatcocky.com/"
 languageCode = "en-au"
 title = "The Great Cocky"
 enableRobotsTXT = true
