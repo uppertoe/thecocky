@@ -565,7 +565,7 @@ html:not(.js) .book__edge { display: none; }
   gap: 0.5rem 0.7rem;
 }
 
-.share-btn {
+.leaf__share-link {
   appearance: none;
   background: transparent;
   border: 1px solid rgba(60, 40, 20, 0.25);
@@ -581,12 +581,12 @@ html:not(.js) .book__edge { display: none; }
   transition: all 180ms;
   font-variation-settings: "opsz" 14, "SOFT" 50;
 }
-.share-btn:hover {
+.leaf__share-link:hover {
   background: var(--accent);
   border-color: var(--accent);
   color: var(--paper);
 }
-.share-btn.is-success {
+.leaf__share-link.is-success {
   background: var(--accent);
   border-color: var(--accent);
   color: var(--paper);
