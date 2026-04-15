@@ -222,12 +222,20 @@ html:not(.js) .book__edge { display: none; }
 
 .stanza {
   margin: 0 0 1.4em;
-  /* Rebalance centred lines so no stanza ends on a single-word runt.
-     Supported by Chrome 114+, Firefox 121+, Safari 17.5+; older browsers
-     fall back to the default greedy wrapper (unchanged from today). */
-  text-wrap: balance;
 }
 .stanza:last-child { margin-bottom: 0; }
+
+/* Each authored line is its own block so `text-wrap: balance` can
+   rebalance *that line's* soft wraps independently — otherwise a
+   55-char line that wraps on a 310px mobile column leaves the last
+   word on its own, and balance (operating at the <p> level, which
+   <br>s don't break) can't redistribute across the hard breaks.
+   Supported by Chrome 114+, Firefox 121+, Safari 17.5+; older
+   browsers fall back to the default greedy wrapper. */
+.stanza__line {
+  display: block;
+  text-wrap: balance;
+}
 
 .dropcap {
   font-family: var(--display);
@@ -486,6 +494,11 @@ html:not(.js) .book__edge { display: none; }
 /* ── End leaf ───────────────────────────────────────────── */
 .leaf--end {
   padding: 6rem 4rem;
+  /* Fall back to top-alignment if the end card is taller than the
+     leaf — otherwise plain `center` overflows both edges and the
+     spread's overflow:hidden eats the share row at the bottom. */
+  align-items: safe center;
+  overflow-y: auto;
 }
 
 .leaf__end-card {
@@ -912,16 +925,33 @@ html:not(.js) .book__edge { display: none; }
     object-position: center center;
   }
 
-  /* Verse leaves: make sure the inner column is actually centred. */
+  /* Verse leaves: make sure the inner column is actually centred, and
+     give them the full viewport width (minus a small gutter) so the
+     longest authored lines have the best chance of fitting on one
+     visual line before soft-wrapping. Extra bottom padding keeps the
+     last line from sitting on top of the fixed nav. */
+  .leaf--verse {
+    padding: 3rem 0.9rem 7rem;
+  }
   .leaf--verse .leaf__inner {
     margin-left: auto;
     margin-right: auto;
+    max-width: none;
+  }
+  /* Nudge the verse type down a touch on narrow phones so more fits
+     per line — keeps the same visual rhythm as desktop. */
+  .leaf__verse {
+    font-size: clamp(0.88rem, 2.9vw, 1.02rem);
+    line-height: 1.55;
   }
 
   /* Mobile: the cream paper fills the viewport, so flip the nav to
      ink-on-paper. No pill, no blur — just the same typographic
-     personality as the rest of the book, printed onto the page. */
+     personality as the rest of the book, printed onto the page.
+     Sit the nav closer to the page edge so the verse has more
+     breathing room above it. */
   .book__nav {
+    bottom: max(0.5rem, env(safe-area-inset-bottom));
     gap: 0.6rem;
     color: var(--ink);
     padding: 0;
