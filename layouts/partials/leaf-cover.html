@@ -1,9 +1,19 @@
 {{- $leaf := .leaf -}}
 {{- $img := resources.Get (printf "images/%s" $leaf.image) -}}
-{{- $w := $img.Resize "1400x webp q90" -}}
+{{- $w1400 := $img.Resize "1400x webp q90" -}}
+{{- $w700  := $img.Resize "700x webp q86" -}}
 <article class="leaf leaf--cover" data-kind="cover" data-index="{{ .index }}">
   <div class="leaf__cover-art">
-    <img src="{{ $w.RelPermalink }}" alt="Cover illustration: an angry cockatoo in a red tie" width="{{ $w.Width }}" height="{{ $w.Height }}">
+    <img
+      src="{{ $w1400.RelPermalink }}"
+      srcset="{{ $w700.RelPermalink }} 700w, {{ $w1400.RelPermalink }} 1400w"
+      sizes="(max-width: 760px) 100vw, 50vw"
+      alt="Cover illustration: an angry cockatoo in a red tie"
+      width="{{ $w1400.Width }}"
+      height="{{ $w1400.Height }}"
+      loading="eager"
+      decoding="async"
+      fetchpriority="high">
   </div>
   <div class="leaf__cover-text">
     <h1 class="leaf__title">

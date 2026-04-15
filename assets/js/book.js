@@ -1,52 +1,58 @@
 /* ─────────────────────────────────────────────────────────
    The Great Cocky — page-turn engine
    ─────────────────────────────────────────────────────────
-   Spreads are rendered server-side by Hugo. This script:
-     • activates one spread at a time
-     • handles prev/next, keyboard, swipe, edge-clicks
-     • splits paired spreads into two virtual pages on mobile
-     • drives the share buttons (end card + nav)
+   Spreads are rendered server-side inside a fixed-size viewport.
+   Embla Carousel drives the vertical rail, with the wheel-gestures
+   plugin mapping trackpad/mousewheel input onto the same drag path
+   as a touch swipe. `containScroll: 'trimSnaps'` gives us the hard
+   end-stops that the hand-rolled version was missing.
+
+   Desktop: one slide per spread. Mobile: one slide per leaf inside
+   paired spreads, with solo spreads still treated as a single page.
 */
 
 (function () {
-  const html = document.documentElement;
   const book = document.getElementById('book');
   const viewport = document.getElementById('book-viewport');
-  if (!book || !viewport) return;
-
-  const spreadEls = Array.from(viewport.querySelectorAll('.spread'));
-  if (spreadEls.length === 0) return;
+  const rail = document.getElementById('book-rail');
+  if (!book || !viewport || !rail) return;
+  if (typeof EmblaCarousel !== 'function') return;
 
   book.classList.add('is-ready');
 
-  // ── Mobile sub-page handling ────────────────────────────
-  const isMobile = () => window.matchMedia('(max-width: 760px)').matches;
+  const mobileMQ = window.matchMedia('(max-width: 760px)');
+  const reducedMQ = window.matchMedia('(prefers-reduced-motion: reduce)');
 
-  function buildVirtualPages() {
-    const pages = [];
-    spreadEls.forEach((el, idx) => {
-      const isPaired = el.querySelectorAll('.leaf').length === 2;
-      if (isPaired && isMobile()) {
-        pages.push({ spread: idx, half: 0 });
-        pages.push({ spread: idx, half: 1 });
-      } else {
-        pages.push({ spread: idx, half: null });
-      }
-    });
-    return pages;
+  function slidesFor() {
+    const selector = mobileMQ.matches
+      ? '.spread--solo, .spread:not(.spread--solo) > .leaf'
+      : ':scope > .spread';
+    return Array.from(rail.querySelectorAll(selector));
   }
 
-  let pages = buildVirtualPages();
-  let current = 0;
-  let lastSpreadIdx = -1;
+  let startIndex = 0;
+  try {
+    const saved = parseInt(sessionStorage.getItem('cocky:page') || '0', 10);
+    if (!Number.isNaN(saved) && saved > 0) startIndex = saved;
+  } catch (e) {}
 
-  const turnMs = (() => {
-    const raw = getComputedStyle(document.documentElement).getPropertyValue('--turn-dur').trim();
-    if (raw.endsWith('ms')) return parseFloat(raw);
-    if (raw.endsWith('s'))  return parseFloat(raw) * 1000;
-    return 420;
-  })();
+  const plugins = typeof EmblaCarouselWheelGestures === 'function'
+    ? [EmblaCarouselWheelGestures({ forceWheelAxis: 'y' })]
+    : [];
 
+  const embla = EmblaCarousel(viewport, {
+    axis: 'y',
+    align: 'start',
+    containScroll: 'trimSnaps',
+    skipSnaps: false,
+    dragFree: false,
+    watchDrag: true,
+    duration: reducedMQ.matches ? 0 : 26,
+    startIndex,
+    slides: slidesFor(),
+  }, plugins);
+
+  // ── UI wiring ───────────────────────────────────────────
   const $current = document.getElementById('page-current');
   const $total = document.getElementById('page-total');
   const $prev = document.getElementById('btn-prev');
@@ -54,166 +60,167 @@
   const $edgePrev = document.getElementById('edge-prev');
   const $edgeNext = document.getElementById('edge-next');
   const $progressFill = document.getElementById('progress-fill');
+  const $progressBar = document.getElementById('progress-bar');
+  const $hint = document.getElementById('scroll-hint');
 
-  function render() {
-    const target = pages[current];
-    const newSpreadIdx = target.spread;
-    const changed = newSpreadIdx !== lastSpreadIdx;
-
-    spreadEls.forEach((el, idx) => {
-      const isActive = idx === newSpreadIdx;
-      const wasActive = idx === lastSpreadIdx;
-
-      if (isActive) {
-        el.classList.remove('is-leaving');
-        // Toggle the half BEFORE replaying the animation so the
-        // newly visible leaf is the one that slides in.
-        el.classList.toggle('is-mobile-second', target.half === 1);
-        // Force-replay the entrance animation on every turn — including
-        // within-pair half swaps on mobile — so every transition feels
-        // the same as a cross-spread page turn.
-        if (el.classList.contains('is-active')) {
-          el.classList.remove('is-active');
-          void el.offsetWidth;
-        }
-        el.classList.add('is-active');
-      } else {
-        if (wasActive && changed) {
-          el.classList.remove('is-active');
-          el.classList.add('is-leaving');
-          setTimeout(() => el.classList.remove('is-leaving'), turnMs + 40);
-        } else {
-          el.classList.remove('is-active');
-          el.classList.remove('is-leaving');
-        }
-        el.classList.remove('is-mobile-second');
-      }
-
-      el.setAttribute('aria-hidden', isActive ? 'false' : 'true');
-    });
-
-    lastSpreadIdx = newSpreadIdx;
-
-    $current.textContent = String(current + 1);
-    $total.textContent = String(pages.length);
-    $prev.disabled = current === 0;
-    $next.disabled = current === pages.length - 1;
+  function updateUI() {
+    const idx = embla.selectedScrollSnap();
+    const total = embla.scrollSnapList().length;
+    if ($current) $current.textContent = String(idx + 1);
+    if ($total) $total.textContent = String(total);
+    if ($prev) $prev.disabled = !embla.canScrollPrev();
+    if ($next) $next.disabled = !embla.canScrollNext();
     if ($progressFill) {
-      const pct = pages.length > 1 ? (current / (pages.length - 1)) * 100 : 100;
+      const pct = total > 1 ? (idx / (total - 1)) * 100 : 100;
       $progressFill.style.width = pct + '%';
     }
-
-    try { sessionStorage.setItem('cocky:page', String(current)); } catch (e) {}
+    if ($progressBar) {
+      $progressBar.setAttribute('aria-valuemax', String(total));
+      $progressBar.setAttribute('aria-valuenow', String(idx + 1));
+    }
+    try { sessionStorage.setItem('cocky:page', String(idx)); } catch (e) {}
   }
 
-  function setDir(delta) {
-    book.dataset.dir = delta < 0 ? 'back' : 'fwd';
+  embla.on('init', updateUI);
+  embla.on('select', updateUI);
+  embla.on('reInit', updateUI);
+
+  if ($prev) $prev.addEventListener('click', () => embla.scrollPrev());
+  if ($next) $next.addEventListener('click', () => embla.scrollNext());
+  if ($edgePrev) $edgePrev.addEventListener('click', () => embla.scrollPrev());
+  if ($edgeNext) $edgeNext.addEventListener('click', () => embla.scrollNext());
+
+  // ── Progress-bar scrubbing ─────────────────────────────
+  // Tap to jump, drag to scrub. Doubles as the "back to start"
+  // affordance — no extra UI required.
+  if ($progressBar) {
+    let scrubbing = false;
+    let lastIdx = -1;
+
+    function pageFromEvent(e) {
+      const rect = $progressBar.getBoundingClientRect();
+      const total = embla.scrollSnapList().length;
+      if (rect.width <= 0 || total <= 1) return 0;
+      let frac = (e.clientX - rect.left) / rect.width;
+      if (frac < 0) frac = 0;
+      if (frac > 1) frac = 1;
+      return Math.round(frac * (total - 1));
+    }
+
+    function jumpTo(idx) {
+      if (idx === lastIdx) return;
+      lastIdx = idx;
+      embla.scrollTo(idx, true); // jump — no animation while dragging
+    }
+
+    $progressBar.addEventListener('pointerdown', (e) => {
+      if (e.button !== undefined && e.button !== 0) return;
+      scrubbing = true;
+      lastIdx = -1;
+      $progressBar.classList.add('is-scrubbing');
+      try { $progressBar.setPointerCapture(e.pointerId); } catch (err) {}
+      jumpTo(pageFromEvent(e));
+      dismissHint();
+    });
+
+    $progressBar.addEventListener('pointermove', (e) => {
+      if (!scrubbing) return;
+      jumpTo(pageFromEvent(e));
+    });
+
+    function endScrub(e) {
+      if (!scrubbing) return;
+      scrubbing = false;
+      $progressBar.classList.remove('is-scrubbing');
+      try { $progressBar.releasePointerCapture(e.pointerId); } catch (err) {}
+    }
+    $progressBar.addEventListener('pointerup', endScrub);
+    $progressBar.addEventListener('pointercancel', endScrub);
   }
-
-  function go(delta) {
-    const next = current + delta;
-    if (next < 0 || next >= pages.length) return;
-    setDir(delta);
-    current = next;
-    render();
-    preloadNeighbours();
-  }
-
-  function goTo(idx) {
-    if (idx < 0 || idx >= pages.length) return;
-    setDir(idx - current);
-    current = idx;
-    render();
-    preloadNeighbours();
-  }
-
-  // Restore progress
-  try {
-    const saved = parseInt(sessionStorage.getItem('cocky:page') || '0', 10);
-    if (!Number.isNaN(saved) && saved >= 0 && saved < pages.length) current = saved;
-  } catch (e) {}
-
-  // ── Wire up controls ────────────────────────────────────
-  $prev.addEventListener('click', () => go(-1));
-  $next.addEventListener('click', () => go(+1));
-  $edgePrev.addEventListener('click', () => go(-1));
-  $edgeNext.addEventListener('click', () => go(+1));
 
   document.addEventListener('keydown', (e) => {
     if (e.target.matches('input, textarea')) return;
     switch (e.key) {
       case 'ArrowLeft':
+      case 'ArrowUp':
       case 'PageUp':
         e.preventDefault();
-        go(-1);
+        embla.scrollPrev();
         break;
       case 'ArrowRight':
+      case 'ArrowDown':
       case 'PageDown':
       case ' ':
         e.preventDefault();
-        go(+1);
+        embla.scrollNext();
         break;
       case 'Home':
         e.preventDefault();
-        goTo(0);
+        embla.scrollTo(0);
         break;
       case 'End':
         e.preventDefault();
-        goTo(pages.length - 1);
+        embla.scrollTo(embla.scrollSnapList().length - 1);
         break;
     }
   });
 
-  // ── Touch / swipe ───────────────────────────────────────
-  let touchStartX = null;
-  let touchStartY = null;
-  viewport.addEventListener('touchstart', (e) => {
-    if (e.touches.length !== 1) return;
-    touchStartX = e.touches[0].clientX;
-    touchStartY = e.touches[0].clientY;
-  }, { passive: true });
+  // ── Re-init on breakpoint crossing ──────────────────────
+  // Crossing the mobile breakpoint changes what counts as a page
+  // (whole spreads ↔ individual leaves), so rebuild Embla with the
+  // new slide list, re-anchored to the same spread.
+  let wasMobile = mobileMQ.matches;
+  function handleBreakpoint() {
+    const nowMobile = mobileMQ.matches;
+    if (nowMobile === wasMobile) return;
+    wasMobile = nowMobile;
 
-  viewport.addEventListener('touchend', (e) => {
-    if (touchStartX === null) return;
-    const t = e.changedTouches[0];
-    const dx = t.clientX - touchStartX;
-    const dy = t.clientY - touchStartY;
-    touchStartX = touchStartY = null;
-    if (Math.abs(dx) < 40 || Math.abs(dx) < Math.abs(dy) * 1.2) return;
-    go(dx < 0 ? +1 : -1);
-  }, { passive: true });
+    const currentSlide = embla.slideNodes()[embla.selectedScrollSnap()];
+    const anchor = currentSlide && currentSlide.closest
+      ? (currentSlide.closest('.spread') || currentSlide)
+      : currentSlide;
 
-  // ── Resize: rebuild virtual pages if mobile state changed
-  let wasMobile = isMobile();
-  window.addEventListener('resize', () => {
-    const nowMobile = isMobile();
-    if (nowMobile !== wasMobile) {
-      wasMobile = nowMobile;
-      const targetSpread = pages[current].spread;
-      pages = buildVirtualPages();
-      current = pages.findIndex(p => p.spread === targetSpread);
-      if (current < 0) current = 0;
-      render();
+    const newSlides = slidesFor();
+    let newIdx = newSlides.indexOf(anchor);
+    if (newIdx < 0 && anchor) {
+      newIdx = newSlides.findIndex((s) =>
+        s === anchor
+        || (anchor.contains && anchor.contains(s))
+        || (s.contains && s.contains(anchor))
+      );
     }
-  });
+    if (newIdx < 0) newIdx = 0;
 
-  // ── Pre-decode all images so turns never race the decoder ──
-  // Images are already loading="eager" so the bytes are on the way;
-  // img.decode() forces the browser to finish decoding into paint-
-  // ready form, avoiding the "image pops in mid-animation" effect.
-  function preloadAll() {
-    const imgs = viewport.querySelectorAll('img');
-    imgs.forEach(img => {
-      const go = () => { if (img.decode) img.decode().catch(() => {}); };
-      if (img.complete && img.naturalWidth > 0) go();
-      else img.addEventListener('load', go, { once: true });
-    });
+    embla.reInit({ slides: newSlides, startIndex: newIdx });
+  }
+  if (mobileMQ.addEventListener) {
+    mobileMQ.addEventListener('change', handleBreakpoint);
+  } else if (mobileMQ.addListener) {
+    mobileMQ.addListener(handleBreakpoint);
   }
 
-  function preloadNeighbours() { /* kept for call-site compatibility */ }
+  // ── Dismiss the "scroll to read" hint ──────────────────
+  let hintDismissed = false;
+  function dismissHint() {
+    if (hintDismissed || !$hint) return;
+    hintDismissed = true;
+    $hint.classList.add('is-hidden');
+  }
+  [$prev, $next, $edgePrev, $edgeNext].forEach((btn) => {
+    if (btn) btn.addEventListener('click', dismissHint);
+  });
+  embla.on('select', dismissHint);
+  document.addEventListener('keydown', dismissHint, { once: true });
+  window.addEventListener('wheel', dismissHint, { once: true, passive: true });
+  viewport.addEventListener('touchstart', dismissHint, { once: true, passive: true });
+  setTimeout(dismissHint, 9000);
 
-  render();
-  preloadAll();
+  // ── Pre-decode images so turns never race the decoder ──
+  viewport.querySelectorAll('img').forEach((img) => {
+    const decode = () => { if (img.decode) img.decode().catch(() => {}); };
+    if (img.complete && img.naturalWidth > 0) decode();
+    else img.addEventListener('load', decode, { once: true });
+  });
 
   // ── Share ───────────────────────────────────────────────
   const shareUrlBase = window.location.href.split('#')[0].split('?')[0];
@@ -221,7 +228,6 @@
   const shareText = (document.querySelector('meta[name="description"]') || {}).content
     || 'A picture book worth passing on.';
 
-  // Each channel gets a ?ref=<channel> tag so analytics can attribute.
   const refUrl = (channel) => shareUrlBase + (shareUrlBase.includes('?') ? '&' : '?') + 'ref=' + channel;
 
   function flashCopied(btn) {
@@ -238,7 +244,7 @@
     const kind = btn.dataset.share;
 
     if (kind === 'native') {
-      if (!navigator.share) return; // stays hidden
+      if (!navigator.share) return;
       btn.hidden = false;
       btn.addEventListener('click', () => {
         navigator.share({ title: shareTitle, text: shareText, url: refUrl('share') }).catch(() => {});

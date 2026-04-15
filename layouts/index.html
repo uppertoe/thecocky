@@ -53,26 +53,41 @@
 
 <main class="book" id="book" aria-label="The Great Cocky — picture book">
   <div class="book__viewport" id="book-viewport">
-    {{- range $sIdx, $spread := $spreads -}}
-    <section class="spread spread--{{ $spread.type }}{{ if eq (len $spread.leaves) 1 }} spread--solo{{ end }}" data-spread="{{ $sIdx }}" aria-hidden="true">
-      {{- range $li, $leaf := $spread.leaves -}}
-        {{- partial (printf "leaf-%s.html" $leaf.kind) (dict "leaf" $leaf "index" (add $spread.startIndex $li) "minutes" $minutes "spreadCount" (len $spreads)) -}}
+    <div class="book__rail" id="book-rail">
+      {{- range $sIdx, $spread := $spreads -}}
+      <section class="spread spread--{{ $spread.type }}{{ if eq (len $spread.leaves) 1 }} spread--solo{{ end }}" data-spread="{{ $sIdx }}">
+        {{- range $li, $leaf := $spread.leaves -}}
+          {{- partial (printf "leaf-%s.html" $leaf.kind) (dict "leaf" $leaf "index" (add $spread.startIndex $li) "minutes" $minutes "spreadCount" (len $spreads)) -}}
+        {{- end -}}
+      </section>
       {{- end -}}
-    </section>
-    {{- end -}}
+    </div>
   </div>
 
   <nav class="book__nav" aria-label="Page navigation">
-    <button class="book__chev" id="btn-prev" aria-label="Previous page">‹</button>
-    <div class="book__progress" aria-live="polite">
-      <div class="book__progress-bar"><span class="book__progress-fill" id="progress-fill"></span></div>
-      <div class="book__progress-text">
+    <button class="book__chev" id="btn-prev" aria-label="Previous page">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 15l6-6 6 6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
+    <div class="book__progress">
+      <div
+        class="book__progress-bar"
+        id="progress-bar"
+        role="slider"
+        tabindex="0"
+        aria-label="Page"
+        aria-valuemin="1"
+        aria-valuemax="{{ len $spreads }}"
+        aria-valuenow="1"
+      ><span class="book__progress-fill" id="progress-fill"></span></div>
+      <div class="book__progress-text" aria-live="polite">
         <span id="page-current">1</span>
         <span class="book__progress-sep">of</span>
         <span id="page-total">{{ len $spreads }}</span>
       </div>
     </div>
-    <button class="book__chev" id="btn-next" aria-label="Next page">›</button>
+    <button class="book__chev" id="btn-next" aria-label="Next page">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"/></svg>
+    </button>
     <button class="book__nav-share" id="nav-share" aria-label="Share this book" title="Share">
       <svg viewBox="0 0 24 24" aria-hidden="true">
         <path d="M12 3v13M7 8l5-5 5 5M5 14v5a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2v-5" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
@@ -83,5 +98,12 @@
 
   <button class="book__edge book__edge--left" id="edge-prev" aria-hidden="true" tabindex="-1"></button>
   <button class="book__edge book__edge--right" id="edge-next" aria-hidden="true" tabindex="-1"></button>
+
+  <div class="book__hint" id="scroll-hint" aria-hidden="true">
+    <span class="book__hint-label">Scroll to read</span>
+    <svg viewBox="0 0 24 24" aria-hidden="true">
+      <path d="M6 9l6 6 6-6" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"/>
+    </svg>
+  </div>
 </main>
 {{ end }}

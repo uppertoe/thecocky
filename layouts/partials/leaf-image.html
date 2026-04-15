@@ -1,8 +1,29 @@
 {{- $leaf := .leaf -}}
 {{- $img := resources.Get (printf "images/%s" $leaf.image) -}}
-{{- $w := $img.Resize "1400x webp q90" -}}
+{{- $w1400 := $img.Resize "1400x webp q90" -}}
+{{- $w700  := $img.Resize "700x webp q86" -}}
+{{- /* Stay eager on every image so the in-page decode loop can warm
+       them all before the user reaches them — but split fetchpriority
+       so the cover and the first content pair win bandwidth on slow
+       connections. Indices: 0 = cover, 1–2 = first verse + image,
+       3–4 = second pair, etc. */ -}}
+{{- $fp := "low" -}}
+{{- if le .index 2 -}}
+  {{- $fp = "high" -}}
+{{- else if le .index 4 -}}
+  {{- $fp = "auto" -}}
+{{- end -}}
 <article class="leaf leaf--image" data-kind="image" data-index="{{ .index }}"{{ with $leaf.pair }} data-pair="{{ . }}"{{ end }}>
   <figure class="leaf__figure">
-    <img src="{{ $w.RelPermalink }}" alt="{{ $leaf.alt }}" width="{{ $w.Width }}" height="{{ $w.Height }}" loading="eager" decoding="async" fetchpriority="{{ if le .index 2 }}high{{ else }}auto{{ end }}">
+    <img
+      src="{{ $w1400.RelPermalink }}"
+      srcset="{{ $w700.RelPermalink }} 700w, {{ $w1400.RelPermalink }} 1400w"
+      sizes="(max-width: 760px) 100vw, 50vw"
+      alt="{{ $leaf.alt }}"
+      width="{{ $w1400.Width }}"
+      height="{{ $w1400.Height }}"
+      loading="eager"
+      decoding="async"
+      fetchpriority="{{ $fp }}">
   </figure>
 </article>

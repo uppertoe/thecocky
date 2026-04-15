@@ -1,7 +1,12 @@
-baseURL = "/"
+# TODO: set this to the production URL before deploying — the canonical
+# link, OG image, sitemap, and JSON-LD all resolve through it.
+baseURL = "https://example.com/"
 languageCode = "en-au"
 title = "The Great Cocky"
 enableRobotsTXT = true
+
+# Single-page picture book — no taxonomies or RSS feed to expose.
+disableKinds = ["taxonomy", "term", "RSS"]
 
 [params]
 author = "Paul Upperton"

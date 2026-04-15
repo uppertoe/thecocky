@@ -1,6 +1,25 @@
 /* ─────────────────────────────────────────────────────────
    The Great Cocky — picture book stylesheet
-   ───────────────────────────────────────────────────────── */
+   ─────────────────────────────────────────────────────────
+   Self-hosted Fraunces variable font. The {{ .roman }} /
+   {{ .italic }} placeholders are filled in at build time by
+   Hugo's resources.ExecuteAsTemplate, so the URLs include the
+   fingerprinted asset paths. */
+
+@font-face {
+  font-family: 'Fraunces';
+  font-style: normal;
+  font-weight: 300 700;
+  font-display: swap;
+  src: url('{{ .roman }}') format('woff2');
+}
+@font-face {
+  font-family: 'Fraunces';
+  font-style: italic;
+  font-weight: 300 700;
+  font-display: swap;
+  src: url('{{ .italic }}') format('woff2');
+}
 
 :root {
   /* Palette — picked from the PDF artwork */
@@ -74,7 +93,6 @@ html.js .book {
 html.js .book__viewport {
   width: var(--spread-w);
   height: var(--spread-h);
-  perspective: 2200px;
   overflow: hidden;
   background: var(--paper);
   border-radius: 2px;
@@ -83,6 +101,21 @@ html.js .book__viewport {
     0 24px 60px -28px rgba(0,0,0,0.55),
     0 0 0 1px rgba(0,0,0,0.18);
 }
+
+/* The rail is Embla's container: a vertical flex stack of slides.
+   Embla owns the transform — we just provide the layout. */
+html.js .book__rail {
+  position: relative;
+  width: 100%;
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  /* Vertical axis carousel: let the browser own horizontal pan and
+     pinch-zoom, hand vertical pan to Embla. */
+  touch-action: pan-x pinch-zoom;
+}
+/* No-JS: rail is just a plain wrapper, spreads flow as normal. */
+html:not(.js) .book__rail { display: contents; }
 
 /* ── Spreads (rendered server-side by Hugo) ─────────────── */
 .spread {
@@ -104,32 +137,14 @@ html.js .book__viewport {
 }
 
 html.js .spread {
-  position: absolute;
-  inset: 0;
+  position: relative;
+  width: 100%;
+  flex: 0 0 100%;         /* one spread = one viewport tall */
+  min-height: 0;
   margin: 0;
   aspect-ratio: auto;
-  opacity: 0;
-  visibility: hidden;
-  transform: translateX(0);
-  transition: visibility 0s linear var(--turn-dur);
-  /* The viewport card now owns the shadow/border-radius — individual
-     spreads are flat layers inside it. */
   box-shadow: none;
   border-radius: 0;
-}
-
-/* Only promote the two spreads that are actually animating — promoting
-   every spread blows past the browser's will-change memory budget. */
-html.js .spread.is-active,
-html.js .spread.is-leaving {
-  will-change: transform, opacity;
-}
-
-/* Avoid the brief flash where every spread is hidden but none is yet
-   marked active: the first one stays visible until JS picks one. */
-html.js .book:not(.is-ready) .spread:first-child {
-  opacity: 1;
-  visibility: visible;
 }
 
 /* subtle gutter — a hairline rather than a heavy shadow */
@@ -147,58 +162,6 @@ html.js .book:not(.is-ready) .spread:first-child {
     rgba(60, 40, 20, 0.18) 18%,
     rgba(60, 40, 20, 0.18) 82%,
     transparent);
-}
-
-/* Direction-aware page turn. JS sets data-dir on .book before
-   toggling .is-active / .is-leaving — CSS keys off that. */
-html.js .spread.is-active {
-  opacity: 1;
-  visibility: visible;
-  transform: translateX(0);
-  z-index: 2;
-  animation: spread-enter-fwd var(--turn-dur) var(--turn-ease) both;
-}
-html.js .book[data-dir="back"] .spread.is-active {
-  animation-name: spread-enter-back;
-}
-
-html.js .spread.is-leaving {
-  opacity: 1;
-  visibility: visible;
-  z-index: 1;
-  animation: spread-leave-fwd var(--turn-dur) var(--turn-ease) both;
-}
-html.js .book[data-dir="back"] .spread.is-leaving {
-  animation-name: spread-leave-back;
-}
-
-/* First render has no data-dir yet — skip the entrance animation
-   so the initial spread is simply present, not sliding in. */
-html.js .book:not([data-dir]) .spread.is-active {
-  animation: none;
-}
-
-/* Slide + very rapid fade at the edges. The opacity ramp softens the
-   hard appearance/disappearance of the spread as it enters and exits. */
-@keyframes spread-enter-fwd {
-  0%   { transform: translateX(100%); opacity: 0; }
-  25%  { opacity: 1; }
-  100% { transform: translateX(0); opacity: 1; }
-}
-@keyframes spread-enter-back {
-  0%   { transform: translateX(-100%); opacity: 0; }
-  25%  { opacity: 1; }
-  100% { transform: translateX(0); opacity: 1; }
-}
-@keyframes spread-leave-fwd {
-  0%   { transform: translateX(0); opacity: 1; }
-  75%  { opacity: 0; }
-  100% { transform: translateX(-100%); opacity: 0; }
-}
-@keyframes spread-leave-back {
-  0%   { transform: translateX(0); opacity: 1; }
-  75%  { opacity: 0; }
-  100% { transform: translateX(100%); opacity: 0; }
 }
 
 /* Single-leaf spread variants */
@@ -680,18 +643,16 @@ html:not(.js) .book__edge { display: none; }
   background: transparent;
   border: 0;
   color: inherit;
-  font-family: var(--display);
-  font-size: 3.4rem;
-  line-height: 0.5;
-  padding: 0.5rem 0.7rem;
+  padding: 0.5rem;
   cursor: pointer;
+  display: grid;
+  place-items: center;
   transition: color 200ms, transform 200ms, opacity 200ms;
-  font-variation-settings: "opsz" 144, "SOFT" 30;
-  -webkit-font-smoothing: antialiased;
 }
+.book__chev svg { width: 26px; height: 26px; display: block; }
 .book__chev:hover {
   color: var(--accent-soft);
-  transform: scale(1.12);
+  transform: scale(1.15);
 }
 .book__chev:disabled {
   opacity: 0.22;
@@ -709,19 +670,49 @@ html:not(.js) .book__edge { display: none; }
 .book__progress-bar {
   width: clamp(180px, 30vw, 320px);
   height: 2px;
+  /* Visible track is 2px, but vertical padding gives the bar a
+     comfortable ~30px tap target. background-clip + content-box keeps
+     the painted track at content-box size so the visual stays thin. */
+  padding: 14px 0;
+  box-sizing: content-box;
   background: rgba(246, 239, 225, 0.22);
+  background-clip: content-box;
   position: relative;
-  overflow: hidden;
   border-radius: 1px;
+  cursor: pointer;
+  touch-action: none;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.book__progress-bar:focus {
+  outline: none;
+}
+.book__progress-bar:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 8px;
+  border-radius: 2px;
+}
+.book__progress-bar.is-scrubbing,
+.book__progress-bar:hover {
+  background-color: rgba(246, 239, 225, 0.36);
 }
 
 .book__progress-fill {
   display: block;
-  height: 100%;
+  /* Position the fill relative to the content box (the visible track),
+     not the padded hit area. */
+  position: absolute;
+  left: 0;
+  top: 14px;
+  height: 2px;
   width: 0%;
   background: var(--accent);
   box-shadow: 0 0 6px rgba(184, 36, 44, 0.5);
-  transition: width var(--turn-dur) var(--turn-ease);
+  transition: width 160ms linear;
+  pointer-events: none;
+}
+.book__progress-bar.is-scrubbing .book__progress-fill {
+  transition: none;
 }
 
 .book__progress-text {
@@ -805,25 +796,79 @@ html:not(.js) .book__edge { display: none; }
   .book__edge { display: none; }
 }
 
+/* ── Scroll hint ────────────────────────────────────────── */
+.book__hint {
+  position: fixed;
+  left: 50%;
+  bottom: calc(max(1.4rem, env(safe-area-inset-bottom)) + 4.4rem);
+  transform: translateX(-50%);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 0.2rem;
+  color: rgba(246, 239, 225, 0.78);
+  font-family: var(--display);
+  font-style: italic;
+  font-size: 0.78rem;
+  letter-spacing: 0.08em;
+  pointer-events: none;
+  opacity: 0;
+  z-index: 9;
+  animation: hint-fade-in 600ms ease-out 900ms both,
+             hint-bob 1.8s ease-in-out 1500ms infinite;
+  transition: opacity 500ms ease;
+}
+.book__hint svg { width: 18px; height: 18px; display: block; }
+.book__hint-label { opacity: 0.85; }
+.book__hint.is-hidden {
+  opacity: 0 !important;
+  animation: none;
+  visibility: hidden;
+}
+@keyframes hint-fade-in {
+  to { opacity: 0.78; }
+}
+@keyframes hint-bob {
+  0%, 100% { transform: translateX(-50%) translateY(0);   opacity: 0.55; }
+  50%      { transform: translateX(-50%) translateY(4px); opacity: 0.9; }
+}
+/* On mobile the cream paper fills the screen, so the hint needs
+   dark ink to stay legible. */
+@media (max-width: 760px) {
+  .book__hint { color: rgba(26, 20, 20, 0.6); }
+}
+
 /* ── Responsive: single page on narrow viewports ────────── */
 @media (max-width: 760px) {
   :root {
     --spread-w: 100vw;
-    --spread-h: 100vh;
+    --spread-h: 100dvh;
   }
-  .book__viewport { perspective: none; }
   .spread {
     grid-template-columns: 1fr;
     border-radius: 0;
     box-shadow: none;
-    overflow: hidden;
+  }
+  /* Paired spreads are *not* slides on mobile — each of their
+     leaves is. Making the spread position:static lets leaves
+     resolve their offsetTop against the rail, which is what
+     Embla measures. */
+  html.js .spread {
+    position: static;
+  }
+  html.js .spread--solo {
+    flex: 0 0 100%;        /* solo spread = one viewport */
+  }
+  html.js .spread:not(.spread--solo) {
+    flex: 0 0 auto;        /* paired spread sizes to its leaves */
+    display: flex;
+    flex-direction: column;
+  }
+  html.js .spread:not(.spread--solo) .leaf {
+    flex: 0 0 100dvh;      /* each leaf = one viewport */
+    min-height: 100dvh;
   }
   .spread::after { display: none; }
-  /* One half at a time — within-pair swaps replay the spread-level
-     animation via JS so the feel matches a cross-spread turn. */
-  .spread .leaf:nth-child(2) { display: none; }
-  .spread.is-mobile-second .leaf:nth-child(1) { display: none; }
-  .spread.is-mobile-second .leaf:nth-child(2) { display: flex; }
   .leaf { padding: 3rem 1.6rem; }
   /* Desktop uses asymmetric padding so the two halves sit tight against
      the gutter. On mobile each leaf is the whole page — reset to
@@ -867,7 +912,11 @@ html:not(.js) .book__edge { display: none; }
   }
   .book__progress-bar {
     width: clamp(130px, 36vw, 220px);
-    background: rgba(26, 20, 20, 0.18);
+    background-color: rgba(26, 20, 20, 0.18);
+  }
+  .book__progress-bar.is-scrubbing,
+  .book__progress-bar:hover {
+    background-color: rgba(26, 20, 20, 0.32);
   }
   .book__progress-text {
     color: var(--ink-soft);
@@ -1121,7 +1170,8 @@ html:not(.js) .book__edge { display: none; }
 /* ── Reduce motion ──────────────────────────────────────── */
 @media (prefers-reduced-motion: reduce) {
   :root { --turn-dur: 0ms; }
-  .spread { transition: none; animation: none !important; }
+  html.js .book__viewport { scroll-behavior: auto; }
+  .book__hint { animation: none; opacity: 0.6; }
 }
 
 /* ── Keyboard focus ─────────────────────────────────────── */

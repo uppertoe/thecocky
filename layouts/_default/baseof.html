@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="{{ site.LanguageCode | default "en" }}">
 <head>
   <script>document.documentElement.classList.add('js');</script>
   <meta charset="UTF-8">
@@ -8,7 +8,8 @@
   <meta name="theme-color" content="#1a1414">
   <link rel="icon" type="image/svg+xml" href="{{ "favicon.svg" | relURL }}">
   <link rel="mask-icon" href="{{ "favicon.svg" | relURL }}" color="#1a1414">
-  <title>{{ site.Title }}</title>
+  <title>{{ if .IsHome }}{{ site.Title }}{{ else }}{{ .Title }} — {{ site.Title }}{{ end }}</title>
+  <link rel="canonical" href="{{ .Permalink }}">
 
   {{- /* Pre-rendered share image: cover cropped to the OG 1.91:1 ratio. */ -}}
   {{- $coverRes := resources.Get "images/01-cover.png" -}}
@@ -21,7 +22,7 @@
   <meta property="og:image:width" content="{{ $og.Width }}">
   <meta property="og:image:height" content="{{ $og.Height }}">
   <meta property="og:image:alt" content="The Great Cocky — cover illustration of an angry cockatoo in a red tie">
-  <meta property="og:url" content="{{ "" | absURL }}">
+  <meta property="og:url" content="{{ .Permalink }}">
   <meta property="og:locale" content="en_AU">
   {{ with site.Params.author }}<meta property="book:author" content="{{ . }}">{{ end }}
   {{ with site.Params.illustrator }}<meta property="book:author" content="{{ . }}">{{ end }}
@@ -30,17 +31,66 @@
   <meta name="twitter:description" content="{{ site.Params.description }}">
   <meta name="twitter:image" content="{{ $og.Permalink }}">
 
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght,SOFT@0,9..144,300..700,30..100;1,9..144,300..700,30..100&display=swap" rel="stylesheet">
+  {{- /* Self-hosted Fraunces variable font. The CSS file references
+        these URLs via Hugo's ExecuteAsTemplate, so they're fingerprinted
+        and long-cacheable. We preload both files so the swap from the
+        system fallback happens before first paint. */ -}}
+  {{- $fontRoman  := resources.Get "fonts/Fraunces-roman-vf.woff2"  | resources.Fingerprint -}}
+  {{- $fontItalic := resources.Get "fonts/Fraunces-italic-vf.woff2" | resources.Fingerprint -}}
+  <link rel="preload" as="font" type="font/woff2" href="{{ $fontRoman.RelPermalink }}" crossorigin>
+  <link rel="preload" as="font" type="font/woff2" href="{{ $fontItalic.RelPermalink }}" crossorigin>
 
-  {{ $css := resources.Get "css/book.css" | resources.Minify | resources.Fingerprint }}
+  {{- /* Preload the LCP image (the cover) so the parser doesn't have to
+        wait until it reaches the <img> tag in the body. We preload the
+        small variant for narrow viewports and the large variant for
+        desktop, matching the srcset/sizes the cover partial emits. */ -}}
+  {{ if .IsHome }}
+  {{- $cover1400 := $coverRes.Resize "1400x webp q90" -}}
+  {{- $cover700  := $coverRes.Resize "700x webp q86" -}}
+  <link rel="preload" as="image" type="image/webp"
+        href="{{ $cover1400.RelPermalink }}"
+        imagesrcset="{{ $cover700.RelPermalink }} 700w, {{ $cover1400.RelPermalink }} 1400w"
+        imagesizes="(max-width: 760px) 100vw, 50vw"
+        fetchpriority="high">
+  {{ end }}
+
+  {{- /* Stylesheet — templated so the @font-face URLs land on our
+        fingerprinted woff2 files. */ -}}
+  {{ $cssData := dict "roman" $fontRoman.RelPermalink "italic" $fontItalic.RelPermalink }}
+  {{ $css := resources.Get "css/book.css" | resources.ExecuteAsTemplate "css/book.css" $cssData | resources.Minify | resources.Fingerprint }}
   <link rel="stylesheet" href="{{ $css.RelPermalink }}" integrity="{{ $css.Data.Integrity }}">
+
+  {{- /* Structured data: schema.org/Book lets Google show rich results
+        and gives crawlers an unambiguous statement of authorship.
+        Built as a single dict so Hugo jsonify'ies it in one pass —
+        avoids the double-escape you get by stringing together multiple
+        {{ | jsonify }} inside a <script> context. */ -}}
+  {{ if .IsHome }}
+  {{- $ld := dict
+    "@context" "https://schema.org"
+    "@type" "Book"
+    "name" site.Title
+    "headline" site.Title
+    "description" site.Params.description
+    "url" .Permalink
+    "image" $og.Permalink
+    "inLanguage" site.LanguageCode
+    "author" (slice (dict "@type" "Person" "name" site.Params.author))
+    "illustrator" (slice (dict "@type" "Person" "name" site.Params.illustrator))
+    "license" site.Params.licenceUrl
+    "copyrightYear" site.Params.copyrightYear
+    "copyrightHolder" (dict "@type" "Person" "name" site.Params.author)
+  -}}
+  <script type="application/ld+json">{{ $ld | jsonify (dict "indent" "  ") | safeJS }}</script>
+  {{ end }}
 </head>
 <body>
   {{ block "main" . }}{{ end }}
 
-  {{ $js := resources.Get "js/book.js" | resources.Minify | resources.Fingerprint }}
+  {{ $embla := resources.Get "js/vendor/embla-carousel.umd.js" }}
+  {{ $emblaWheel := resources.Get "js/vendor/embla-carousel-wheel-gestures.umd.js" }}
+  {{ $bookSrc := resources.Get "js/book.js" }}
+  {{ $js := slice $embla $emblaWheel $bookSrc | resources.Concat "js/book.bundle.js" | resources.Minify | resources.Fingerprint }}
   <script src="{{ $js.RelPermalink }}" integrity="{{ $js.Data.Integrity }}" defer></script>
 
   {{- /* Privacy-respecting analytics (GoatCounter). Only loads in production
