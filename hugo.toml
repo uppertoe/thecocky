@@ -24,3 +24,11 @@ unsafe = true
 
 [build]
 writeStats = false
+
+# The JS bundle is already minified by `resources.Minify` in the template
+# pipeline (see baseof.html). Letting Hugo's publish-time `--minify` run
+# tdewolff over it a second time re-renames variables across the
+# concatenated vendor+app bundle and collides scopes — in 0.160 that
+# caused a TDZ crash in embla-carousel-wheel-gestures. Minify once.
+[minify]
+disableJS = true

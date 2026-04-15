@@ -728,7 +728,10 @@ html:not(.js) .book__edge { display: none; }
   font-style: normal;
 }
 
-.book__nav-share {
+/* Share is pulled out of the nav row so the nav (prev / progress / next)
+   can sit visually centred. The share button floats in the bottom-right
+   corner, anchored to the safe area. */
+.book__share-fab {
   appearance: none;
   background: var(--accent);
   border: 1px solid var(--accent);
@@ -740,14 +743,17 @@ html:not(.js) .book__edge { display: none; }
   place-items: center;
   cursor: pointer;
   transition: transform 200ms, box-shadow 200ms, background 200ms;
-  position: relative;
+  position: fixed;
+  right: max(1.4rem, env(safe-area-inset-right));
+  bottom: max(1.4rem, env(safe-area-inset-bottom));
+  z-index: 11;
   box-shadow:
     0 1px 0 rgba(255, 255, 255, 0.12) inset,
     0 6px 14px -6px rgba(184, 36, 44, 0.55),
     0 0 0 1px rgba(26, 20, 20, 0.25);
 }
-.book__nav-share svg { width: 18px; height: 18px; }
-.book__nav-share:hover {
+.book__share-fab svg { width: 18px; height: 18px; }
+.book__share-fab:hover {
   background: #c9313a;
   transform: translateY(-1px);
   box-shadow:
@@ -755,11 +761,10 @@ html:not(.js) .book__edge { display: none; }
     0 10px 18px -6px rgba(184, 36, 44, 0.7),
     0 0 0 1px rgba(26, 20, 20, 0.3);
 }
-.book__nav-share-toast {
+.book__share-fab-toast {
   position: absolute;
   bottom: calc(100% + 0.6rem);
-  left: 50%;
-  transform: translateX(-50%) translateY(4px);
+  right: 0;
   background: var(--accent);
   color: var(--paper);
   font-family: var(--display);
@@ -770,11 +775,12 @@ html:not(.js) .book__edge { display: none; }
   white-space: nowrap;
   opacity: 0;
   pointer-events: none;
+  transform: translateY(4px);
   transition: opacity 200ms, transform 200ms;
 }
-.book__nav-share-toast.is-visible {
+.book__share-fab-toast.is-visible {
   opacity: 1;
-  transform: translateX(-50%) translateY(0);
+  transform: translateY(0);
 }
 
 /* ── Edge click zones (desktop) ─────────────────────────── */
